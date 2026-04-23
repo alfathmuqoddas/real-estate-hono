@@ -1,6 +1,9 @@
 // middlewares/firebaseAuth.ts
 import { MiddlewareHandler } from "hono";
 import { jwtVerify } from "jose";
+import { getDb } from "@/db";
+import { usersTable } from "@/modules/users/users.model";
+import { eq } from "drizzle-orm";
 
 const GOOGLE_CERTS_URL =
   "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";
@@ -32,7 +35,6 @@ export const firebaseAuthMiddleware: MiddlewareHandler = async (c, next) => {
     const cert = keys[kid];
     if (!cert) throw new Error("Invalid key ID");
 
-    const encoder = new TextEncoder();
     const { payload } = await jwtVerify(
       idToken,
       await crypto.subtle.importKey(
@@ -48,7 +50,25 @@ export const firebaseAuthMiddleware: MiddlewareHandler = async (c, next) => {
       },
     );
 
-    c.set("user", payload);
+    if (!payload.sub) {
+      return c.json({ error: "Invalid token" }, 401);
+    }
+
+    const db = getDb(c.env);
+
+    const userRow = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, payload.sub))
+      .get();
+
+    if (!userRow) return c.json({ error: "User not found" }, 404);
+
+    c.set("user", {
+      uid: payload.sub,
+      email: payload.email,
+      role: userRow.role,
+    });
     await next();
   } catch (err) {
     console.error(err);
