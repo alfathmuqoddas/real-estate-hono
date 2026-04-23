@@ -1,8 +1,26 @@
 import { usersTable } from "./users.model";
 import type { CreateUserInput } from "./dto";
+import { eq } from "drizzle-orm";
 
 export class UserRepository {
   constructor(private db: ReturnType<typeof import("@/db").getDb>) {}
+
+  async findById(id: string) {
+    if (!id) {
+      throw new Error("User id is required");
+    }
+
+    try {
+      return await this.db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.id, id))
+        .get();
+    } catch (error) {
+      console.error("GET USER BY ID SERVICE ERROR:", error);
+      throw new Error("Failed to get user by id");
+    }
+  }
 
   async syncUserData(input: CreateUserInput) {
     try {
