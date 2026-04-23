@@ -2,9 +2,12 @@ import { Hono } from "hono";
 import { getDb } from "@/db";
 import { PropertiesService } from "./properties.service";
 import { PropertyRepository } from "./properties.repo";
-import type { Bindings } from "@/types";
+import type { Bindings, UserContext } from "@/types";
 
-const propertyRoutes = new Hono<{ Bindings: Bindings }>();
+const propertyRoutes = new Hono<{
+  Bindings: Bindings;
+  Variables: UserContext;
+}>();
 
 propertyRoutes.get("/", async (c) => {
   try {
@@ -47,8 +50,13 @@ propertyRoutes.put("/:id", async (c) => {
   try {
     const body = await c.req.json();
     const db = getDb(c.env);
+    const userContext = c.get("user");
     const service = new PropertiesService(new PropertyRepository(db));
-    const results = await service.updateProperty(c.req.param("id"), body);
+    const results = await service.updateProperty(
+      c.req.param("id"),
+      body,
+      userContext,
+    );
     return c.json(results);
   } catch (error) {
     console.error("PROPERTY ROUTES ERROR:", error);
@@ -59,8 +67,9 @@ propertyRoutes.put("/:id", async (c) => {
 propertyRoutes.delete("/:id", async (c) => {
   try {
     const db = getDb(c.env);
+    const user = c.get("user");
     const service = new PropertiesService(new PropertyRepository(db));
-    const results = await service.deleteProperty(c.req.param("id"));
+    const results = await service.deleteProperty(c.req.param("id"), user);
     return c.json(results);
   } catch (error) {
     console.error("PROPERTY ROUTES ERROR:", error);

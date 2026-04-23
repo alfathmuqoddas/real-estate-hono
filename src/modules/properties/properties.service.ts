@@ -37,14 +37,39 @@ export class PropertiesService {
     }
   }
 
-  async updateProperty(id: string, input: Partial<CreatePropertyInput>) {
-    if (!id) {
-      throw new Error("Property id is required");
-    }
-    if (Object.keys(input).length === 0) {
-      throw new Error("No fields to update");
-    }
+  async updateProperty(
+    id: string,
+    input: Partial<CreatePropertyInput>,
+    user: { uid: string; role: string },
+  ) {
     try {
+      if (!id) {
+        throw new Error("Property id is required");
+      }
+
+      const property = await this.repo.findById(id);
+
+      if (!property) {
+        throw new Error("Property not found");
+      }
+
+      if (user.role === "admin") {
+        // Admins can update any property
+        return await this.repo.update(id, input);
+      }
+
+      if (property.propertyAgentId !== user.uid) {
+        throw new Error("You are not authorized to update this property");
+      }
+
+      if (user.role === "user") {
+        throw new Error("User cannot update this property");
+      }
+
+      if (Object.keys(input).length === 0) {
+        throw new Error("No fields to update");
+      }
+
       const result = await this.repo.update(id, input);
       return result;
     } catch (error) {
@@ -53,13 +78,33 @@ export class PropertiesService {
     }
   }
 
-  async deleteProperty(id: string) {
-    if (!id) {
-      throw new Error("Property id is required");
-    }
+  async deleteProperty(id: string, user: { uid: string; role: string }) {
     try {
+      if (!id) {
+        throw new Error("Property id is required");
+      }
+
+      const property = await this.repo.findById(id);
+
+      if (!property) {
+        throw new Error("Property not found");
+      }
+
+      if (property.propertyAgentId !== user.uid) {
+        throw new Error("You are not authorized to delete this property");
+      }
+
+      if (user.role === "user") {
+        throw new Error("User cannot delete this property");
+      }
+
+      if (user.role === "admin") {
+        // Admins can delete any property
+        return await this.repo.delete(id);
+      }
+
       const result = await this.repo.delete(id);
-      return result[0] ?? null;
+      return result;
     } catch (error) {
       console.error("DELETE PROPERTY SERVICE ERROR:", error);
       throw new Error("Failed to delete property");

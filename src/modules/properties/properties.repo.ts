@@ -23,7 +23,8 @@ export class PropertyRepository {
       return await this.db
         .select()
         .from(propertiesTable)
-        .where(eq(propertiesTable.id, id));
+        .where(eq(propertiesTable.id, id))
+        .get();
     } catch (error) {
       console.error("GET PROPERTY BY ID SERVICE ERROR:", error);
       throw new Error("Failed to get property by id");
@@ -32,7 +33,11 @@ export class PropertyRepository {
 
   async create(input: CreatePropertyInput) {
     try {
-      return await this.db.insert(propertiesTable).values(input).run();
+      const [property] = await this.db
+        .insert(propertiesTable)
+        .values(input)
+        .returning();
+      return property;
     } catch (error) {
       console.error("CREATE PROPERTY SERVICE ERROR:", error);
       throw new Error("Failed to create property");
@@ -41,11 +46,12 @@ export class PropertyRepository {
 
   async update(id: string, input: Partial<CreatePropertyInput>) {
     try {
-      return await this.db
+      const [property] = await this.db
         .update(propertiesTable)
         .set({ ...input, updatedAt: new Date() })
         .where(eq(propertiesTable.id, id))
-        .run();
+        .returning();
+      return property;
     } catch (error) {
       console.error("UPDATE PROPERTY SERVICE ERROR:", error);
       throw new Error("Failed to update property");
@@ -54,10 +60,11 @@ export class PropertyRepository {
 
   async delete(id: string) {
     try {
-      return await this.db
+      const [property] = await this.db
         .delete(propertiesTable)
         .where(eq(propertiesTable.id, id))
         .returning();
+      return property;
     } catch (error) {
       console.error("DELETE PROPERTY SERVICE ERROR:", error);
       throw new Error("Failed to delete property");
