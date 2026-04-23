@@ -1,35 +1,16 @@
-import { db } from "@/db";
-import { users } from "@/db/schema";
+import { CreateUserInput } from "./dto";
+import { UserRepository } from "./users.repo";
 
-export const usersService = {
-  syncUserData: async (user: {
-    uid: string;
-    email: string;
-    name: string;
-    photoUrl: string;
-  }) => {
+export class UserService {
+  constructor(private repo: UserRepository) {}
+
+  async syncUserData(payload: CreateUserInput) {
     try {
-      return await db
-        .insert(users)
-        .values({
-          id: user.uid,
-          email: user.email,
-          name: user.name,
-          photoUrl: user.photoUrl,
-          lastLogin: new Date(),
-        })
-        .onConflictDoUpdate({
-          target: users.id,
-          set: {
-            lastLogin: new Date(),
-            name: user.name,
-            photoUrl: user.photoUrl,
-            email: user.email,
-          },
-        });
+      const result = await this.repo.syncUserData(payload);
+      return result;
     } catch (error) {
-      console.error("Database Sync Error:", error);
-      throw new Error("Failed to synchronize user data with database.");
+      console.error("SYNC USER DATA SERVICE ERROR:", error);
+      throw new Error("Failed to sync user data");
     }
-  },
-};
+  }
+}

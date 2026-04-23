@@ -20,6 +20,9 @@ importers:
       hono:
         specifier: ^4.12.14
         version: 4.12.14
+      jose:
+        specifier: ^6.2.2
+        version: 6.2.2
       uuid:
         specifier: ^14.0.0
         version: 14.0.0
@@ -946,6 +949,9 @@ packages:
     resolution: {integrity: sha512-am5zfg3yu6sqn5yjKBNqhnTX7Cv+m00ox+7jbaKkrLMRJ4rAdldd1xPd/JzbBWspqaQv6RSTrgFN95EsfhC+7w==}
     engines: {node: '>=16.9.0'}
 
+  jose@6.2.2:
+    resolution: {integrity: sha512-d7kPDd34KO/YnzaDOlikGpOurfF0ByC2sEV4cANCtdqLlTfBlw2p14O/5d/zv40gJPbIQxfES3nSx1/oYNyuZQ==}
+
   js-base64@3.7.8:
     resolution: {integrity: sha512-hNngCeKxIUQiEUN3GPJOkz4wF/YvdUdbNL9hsBcMQTkKzboD7T/q3OYOuuPZLUE6dBxSGpwhk5mwuDud7JVAow==}
 
@@ -1675,6 +1681,8 @@ snapshots:
       resolve-pkg-maps: 1.0.0
 
   hono@4.12.14: {}
+
+  jose@6.2.2: {}
 
   js-base64@3.7.8: {}
 

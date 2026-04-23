@@ -1,12 +1,12 @@
+// db/client.ts
 import { drizzle } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client/web";
-import type { Context } from "hono";
+import { createClient } from "@libsql/client";
+import type { Bindings } from "@/types";
 
-export const createDb = (c: Context) => {
-  return drizzle(
-    createClient({
-      url: c.env.TURSO_DATABASE_URL,
-      authToken: c.env.TURSO_AUTH_TOKEN,
-    }),
-  );
-};
+export function getDb(env: Bindings) {
+  const client = createClient({
+    url: env.TURSO_URL,
+    authToken: env.TURSO_AUTH_TOKEN,
+  });
+  return drizzle(client);
+}
