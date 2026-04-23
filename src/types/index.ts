@@ -4,3 +4,11 @@ export type Bindings = {
   TURSO_AUTH_TOKEN: string;
   FIREBASE_PROJECT_ID: string;
 };
+
+export type UserContext = {
+  user: {
+    uid: string;
+    email?: string;
+    role: "user" | "admin" | "agent";
+  };
+};
