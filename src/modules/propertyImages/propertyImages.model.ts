@@ -1,10 +1,8 @@
-import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { propertiesTable } from "@/modules/properties/properties.model";
 import { usersTable } from "@/modules/users/users.model";
 import { v7 as uuidv7 } from "uuid";
-
-const users = usersTable;
-const properties = propertiesTable;
+import { relations } from "drizzle-orm";
 
 export const propertyImagesTable = sqliteTable("property_images", {
   id: text("id")
@@ -12,10 +10,10 @@ export const propertyImagesTable = sqliteTable("property_images", {
     .$defaultFn(() => uuidv7()),
   propertyId: integer("property_id")
     .notNull()
-    .references(() => properties.id),
+    .references(() => propertiesTable.id),
   userId: integer("user_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => usersTable.id),
   imageUrl: text("image_url").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
     () => new Date(),
@@ -24,3 +22,20 @@ export const propertyImagesTable = sqliteTable("property_images", {
     () => new Date(),
   ),
 });
+
+export type InsertPropertyImage = typeof propertyImagesTable.$inferInsert;
+export type SelectPropertyImage = typeof propertyImagesTable.$inferSelect;
+
+export const propertyImagesRelations = relations(
+  propertyImagesTable,
+  ({ one }) => ({
+    property: one(propertiesTable, {
+      fields: [propertyImagesTable.propertyId],
+      references: [propertiesTable.id],
+    }),
+    uploader: one(usersTable, {
+      fields: [propertyImagesTable.userId],
+      references: [usersTable.id],
+    }),
+  }),
+);

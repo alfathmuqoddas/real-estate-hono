@@ -6,68 +6,39 @@ export class PropertyRepository {
   constructor(private db: ReturnType<typeof import("@/db").getDb>) {}
 
   async findAll() {
-    try {
-      return await this.db.select().from(propertiesTable);
-    } catch (error) {
-      console.error("GET ALL PROPERTIES SERVICE ERROR:", error);
-      throw new Error("Failed to get all properties");
-    }
+    return await this.db.select().from(propertiesTable);
   }
 
   async findById(id: string) {
-    if (!id) {
-      throw new Error("Property id is required");
-    }
-
-    try {
-      return await this.db
-        .select()
-        .from(propertiesTable)
-        .where(eq(propertiesTable.id, id))
-        .get();
-    } catch (error) {
-      console.error("GET PROPERTY BY ID SERVICE ERROR:", error);
-      throw new Error("Failed to get property by id");
-    }
+    return await this.db
+      .select()
+      .from(propertiesTable)
+      .where(eq(propertiesTable.id, id))
+      .get();
   }
 
   async create(input: CreatePropertyInput) {
-    try {
-      const [property] = await this.db
-        .insert(propertiesTable)
-        .values(input)
-        .returning();
-      return property;
-    } catch (error) {
-      console.error("CREATE PROPERTY SERVICE ERROR:", error);
-      throw new Error("Failed to create property");
-    }
+    const [property] = await this.db
+      .insert(propertiesTable)
+      .values(input)
+      .returning();
+    return property;
   }
 
   async update(id: string, input: Partial<CreatePropertyInput>) {
-    try {
-      const [property] = await this.db
-        .update(propertiesTable)
-        .set({ ...input, updatedAt: new Date() })
-        .where(eq(propertiesTable.id, id))
-        .returning();
-      return property;
-    } catch (error) {
-      console.error("UPDATE PROPERTY SERVICE ERROR:", error);
-      throw new Error("Failed to update property");
-    }
+    const [property] = await this.db
+      .update(propertiesTable)
+      .set({ ...input, updatedAt: new Date() })
+      .where(eq(propertiesTable.id, id))
+      .returning();
+    return property;
   }
 
   async delete(id: string) {
-    try {
-      const [property] = await this.db
-        .delete(propertiesTable)
-        .where(eq(propertiesTable.id, id))
-        .returning();
-      return property;
-    } catch (error) {
-      console.error("DELETE PROPERTY SERVICE ERROR:", error);
-      throw new Error("Failed to delete property");
-    }
+    const [property] = await this.db
+      .delete(propertiesTable)
+      .where(eq(propertiesTable.id, id))
+      .returning();
+    return property;
   }
 }

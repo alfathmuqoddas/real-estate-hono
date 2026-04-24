@@ -1,8 +1,8 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { usersTable } from "@/modules/users/users.model";
+import { propertyImagesTable } from "../propertyImages/propertyImages.model";
 import { v7 as uuidv7 } from "uuid";
-
-const users = usersTable;
+import { relations } from "drizzle-orm";
 
 export const propertiesTable = sqliteTable("properties", {
   id: text("id")
@@ -42,7 +42,7 @@ export const propertiesTable = sqliteTable("properties", {
   // Agent
   propertyAgentId: text("property_agent_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => usersTable.id),
 
   status: text("status", { enum: ["active", "inactive"] }).default("inactive"),
 
@@ -57,3 +57,14 @@ export const propertiesTable = sqliteTable("properties", {
 
 export type InsertPost = typeof propertiesTable.$inferInsert;
 export type SelectPost = typeof propertiesTable.$inferSelect;
+
+export const propertiesRelations = relations(
+  propertiesTable,
+  ({ one, many }) => ({
+    owner: one(usersTable, {
+      fields: [propertiesTable.propertyAgentId],
+      references: [usersTable.id],
+    }),
+    images: many(propertyImagesTable),
+  }),
+);

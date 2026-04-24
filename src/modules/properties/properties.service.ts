@@ -1,40 +1,32 @@
 import { PropertyRepository } from "./properties.repo";
 import type { CreatePropertyInput } from "./dto";
+import {
+  NotFoundError,
+  UnauthorizedError,
+  ForbiddenError,
+  BadRequestError,
+} from "@/errors/http-errors";
 
 export class PropertiesService {
   constructor(private repo: PropertyRepository) {}
 
   async createProperty(input: CreatePropertyInput) {
-    try {
-      const result = await this.repo.create(input);
-      return result;
-    } catch (error) {
-      console.error("CREATE PROPERTY SERVICE ERROR:", error);
-      throw new Error("Failed to create property");
-    }
+    await this.repo.create(input);
   }
 
   async getAllProperties() {
-    try {
-      const result = await this.repo.findAll();
-      return result;
-    } catch (error) {
-      console.error("GET ALL PROPERTIES SERVICE ERROR:", error);
-      throw new Error("Failed to get all properties");
-    }
+    await this.repo.findAll();
   }
 
   async getPropertyById(id: string) {
     if (!id) {
-      throw new Error("Property id is required");
+      throw new BadRequestError("Property id is required");
     }
-    try {
-      const result = await this.repo.findById(id);
-      return result;
-    } catch (error) {
-      console.error("GET PROPERTY BY ID SERVICE ERROR:", error);
-      throw new Error("Failed to get property by id");
+    const result = await this.repo.findById(id);
+    if (!result) {
+      throw new NotFoundError("Property not found");
     }
+    return result;
   }
 
   async updateProperty(
@@ -42,72 +34,61 @@ export class PropertiesService {
     input: Partial<CreatePropertyInput>,
     user: { uid: string; role: string },
   ) {
-    try {
-      if (!id) {
-        throw new Error("Property id is required");
-      }
-
-      const property = await this.repo.findById(id);
-
-      if (!property) {
-        throw new Error("Property not found");
-      }
-
-      if (user.role === "admin") {
-        // Admins can update any property
-        return await this.repo.update(id, input);
-      }
-
-      if (property.propertyAgentId !== user.uid) {
-        throw new Error("You are not authorized to update this property");
-      }
-
-      if (user.role === "user") {
-        throw new Error("User cannot update this property");
-      }
-
-      if (Object.keys(input).length === 0) {
-        throw new Error("No fields to update");
-      }
-
-      const result = await this.repo.update(id, input);
-      return result;
-    } catch (error) {
-      console.error("UPDATE PROPERTY SERVICE ERROR:", error);
-      throw new Error("Failed to update property");
+    if (!id) {
+      throw new BadRequestError("Property id is required");
     }
+
+    if (Object.keys(input).length === 0) {
+      throw new BadRequestError("No fields to update");
+    }
+
+    const property = await this.repo.findById(id);
+
+    if (!property) {
+      throw new NotFoundError("Property not found");
+    }
+
+    if (user.role === "user") {
+      throw new ForbiddenError("User cannot update properties");
+    }
+
+    if (user.role === "admin") {
+      // Admins can update any property
+      return await this.repo.update(id, input);
+    }
+
+    if (property.propertyAgentId !== user.uid) {
+      throw new ForbiddenError(
+        "You are not authorized to update this property",
+      );
+    }
+
+    return await this.repo.update(id, input);
   }
 
   async deleteProperty(id: string, user: { uid: string; role: string }) {
-    try {
-      if (!id) {
-        throw new Error("Property id is required");
-      }
-
-      const property = await this.repo.findById(id);
-
-      if (!property) {
-        throw new Error("Property not found");
-      }
-
-      if (property.propertyAgentId !== user.uid) {
-        throw new Error("You are not authorized to delete this property");
-      }
-
-      if (user.role === "user") {
-        throw new Error("User cannot delete this property");
-      }
-
-      if (user.role === "admin") {
-        // Admins can delete any property
-        return await this.repo.delete(id);
-      }
-
-      const result = await this.repo.delete(id);
-      return result;
-    } catch (error) {
-      console.error("DELETE PROPERTY SERVICE ERROR:", error);
-      throw new Error("Failed to delete property");
+    if (!id) {
+      throw new BadRequestError("Property id is required");
     }
+
+    const property = await this.repo.findById(id);
+
+    if (!property) {
+      throw new NotFoundError("Property not found");
+    }
+
+    if (user.role === "user") {
+      throw new ForbiddenError("User cannot delete properties");
+    }
+
+    if (user.role === "admin") {
+      return this.repo.delete(id);
+    }
+
+    if (property.propertyAgentId !== user.uid) {
+      throw new ForbiddenError("You are not allowed to delete this property");
+    }
+
+    return this.repo.delete(id);
   }
 }
