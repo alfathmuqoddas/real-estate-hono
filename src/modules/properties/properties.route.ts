@@ -3,7 +3,7 @@ import { getDb } from "@/db";
 import { PropertiesService } from "./properties.service";
 import { PropertyRepository } from "./properties.repo";
 import type { Bindings, UserContext } from "@/types";
-import { firebaseAuthMiddleware } from "@/middleware/firebaseAuth";
+import { firebaseAuthMiddleware, roleMiddleware } from "@/middleware";
 import { propertyQuerySchema } from "./dto";
 import { BadRequestError } from "@/errors/http-errors";
 
@@ -39,25 +39,38 @@ propertyRoutes.post("/", async (c) => {
   return c.json(results);
 });
 
-propertyRoutes.put("/:id", firebaseAuthMiddleware, async (c) => {
-  const body = await c.req.json();
-  const db = getDb(c.env);
-  const userContext = c.get("user");
-  const service = new PropertiesService(new PropertyRepository(db));
-  const results = await service.updateProperty(
-    c.req.param("id"),
-    body,
-    userContext,
-  );
-  return c.json(results);
-});
+propertyRoutes.put(
+  "/:id",
+  firebaseAuthMiddleware,
+  roleMiddleware,
+  async (c) => {
+    const body = await c.req.json();
+    const db = getDb(c.env);
+    const userContext = c.get("userFirebase");
+    const roleContext = c.get("userRole");
+    const service = new PropertiesService(new PropertyRepository(db));
+    const results = await service.updateProperty(
+      c.req.param("id"),
+      body,
+      userContext,
+      roleContext,
+    );
+    return c.json(results);
+  },
+);
 
-propertyRoutes.delete("/:id", firebaseAuthMiddleware, async (c) => {
-  const db = getDb(c.env);
-  const user = c.get("user");
-  const service = new PropertiesService(new PropertyRepository(db));
-  const results = await service.deleteProperty(c.req.param("id"), user);
-  return c.json(results);
-});
+propertyRoutes.delete(
+  "/:id",
+  firebaseAuthMiddleware,
+  roleMiddleware,
+  async (c) => {
+    const db = getDb(c.env);
+    const user = c.get("userFirebase");
+    const role = c.get("userRole");
+    const service = new PropertiesService(new PropertyRepository(db));
+    const results = await service.deleteProperty(c.req.param("id"), user, role);
+    return c.json(results);
+  },
+);
 
 export default propertyRoutes;

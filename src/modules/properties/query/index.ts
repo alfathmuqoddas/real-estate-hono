@@ -48,6 +48,13 @@ export function buildPropertyFilters(query: PropertyQuery) {
     );
   }
 
+  if (query.type) {
+    conditions.push(eq(propertiesTable.propertyType, query.type));
+  }
+  if (query.listingType) {
+    conditions.push(eq(propertiesTable.propertyListingType, query.listingType));
+  }
+
   return and(...conditions);
 }
 

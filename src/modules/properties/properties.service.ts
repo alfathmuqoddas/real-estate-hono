@@ -6,6 +6,7 @@ import {
   BadRequestError,
 } from "@/errors/http-errors";
 import type { PropertyQuery } from "./dto";
+import { UserContext } from "@/types";
 
 export class PropertiesService {
   constructor(private repo: PropertyRepository) {}
@@ -42,7 +43,8 @@ export class PropertiesService {
   async updateProperty(
     id: string,
     input: Partial<CreatePropertyInput>,
-    user: { uid: string; role: string },
+    user: UserContext["userFirebase"],
+    role: UserContext["userRole"],
   ) {
     if (!id) {
       throw new BadRequestError("Property id is required");
@@ -58,11 +60,11 @@ export class PropertiesService {
       throw new NotFoundError("Property not found");
     }
 
-    if (user.role === "user") {
+    if (role.role === "user") {
       throw new ForbiddenError("User cannot update properties");
     }
 
-    if (user.role === "admin") {
+    if (role.role === "admin") {
       // Admins can update any property
       return await this.repo.update(id, input);
     }
@@ -76,7 +78,11 @@ export class PropertiesService {
     return await this.repo.update(id, input);
   }
 
-  async deleteProperty(id: string, user: { uid: string; role: string }) {
+  async deleteProperty(
+    id: string,
+    user: UserContext["userFirebase"],
+    role: UserContext["userRole"],
+  ) {
     if (!id) {
       throw new BadRequestError("Property id is required");
     }
@@ -87,11 +93,11 @@ export class PropertiesService {
       throw new NotFoundError("Property not found");
     }
 
-    if (user.role === "user") {
+    if (role.role === "user") {
       throw new ForbiddenError("User cannot delete properties");
     }
 
-    if (user.role === "admin") {
+    if (role.role === "admin") {
       return this.repo.delete(id);
     }
 

@@ -2,8 +2,19 @@ import { Hono } from "hono";
 import propertyRoutes from "@/modules/properties/properties.route";
 import userRoutes from "@/modules/users/users.route";
 import { AppError } from "./errors/app-error";
+import { cors } from "hono/cors";
 
 const app = new Hono();
+
+app.use(
+  "*",
+  cors({
+    origin: "http://localhost:4321",
+    allowHeaders: ["Content-Type", "Authorization"],
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+  }),
+);
 
 app.route("/listings", propertyRoutes);
 app.route("/users", userRoutes);

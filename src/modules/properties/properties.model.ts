@@ -8,7 +8,7 @@ export const propertiesTable = sqliteTable("properties", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => uuidv7()),
-  propertyType: text("property_type", { enum: ["Rumah", "Apartemen"] }),
+  propertyType: text("property_type", { enum: ["rumah", "apartemen"] }),
   propertyTitle: text("property_title").notNull(),
   propertyDeskripsi: text("property_deskripsi").notNull(),
   propertyPrice: integer("property_price").notNull(),
@@ -26,9 +26,6 @@ export const propertiesTable = sqliteTable("properties", {
   propertyJumlahLantai: integer("property_jumlah_lantai"),
   propertyGarasi: integer("property_garasi"),
   propertyDayaListrik: integer("property_daya_listrik"),
-  propertyTipeIklan: text("property_tipe_iklan", {
-    enum: ["Dijual", "Disewa"],
-  }),
   propertyPerabotan: text("property_tipe_perabotan", {
     enum: ["Fully Furnished", "Unfurnished", "Semi-furnished"],
   }),
