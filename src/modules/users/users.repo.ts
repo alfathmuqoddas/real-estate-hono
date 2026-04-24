@@ -33,6 +33,6 @@ export class UserRepository {
           email: input.email,
         },
       })
-      .run();
+      .returning();
   }
 }

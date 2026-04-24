@@ -1,14 +1,18 @@
 export type Bindings = {
   PROD: boolean;
-  TURSO_URL: string;
+  TURSO_CONNECTION_URL: string;
   TURSO_AUTH_TOKEN: string;
   FIREBASE_PROJECT_ID: string;
 };
 
 export type UserContext = {
-  user: {
+  userFirebase: {
     uid: string;
-    email?: string;
+    email: string;
+    name: string;
+    photoUrl: string;
+  };
+  userRole: {
     role: "user" | "admin" | "agent";
   };
 };

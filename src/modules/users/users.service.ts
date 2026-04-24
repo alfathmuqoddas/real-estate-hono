@@ -1,6 +1,6 @@
 import { CreateUserInput } from "./dto";
 import { UserRepository } from "./users.repo";
-import { BadRequestError } from "@/errors/http-errors";
+import { BadRequestError, NotFoundError } from "@/errors/http-errors";
 
 export class UserService {
   constructor(private repo: UserRepository) {}
@@ -9,7 +9,12 @@ export class UserService {
     if (!id) {
       throw new BadRequestError("User id is required");
     }
-    await this.repo.findById(id);
+    const result = await this.repo.findById(id);
+
+    if (!result) {
+      throw new NotFoundError("User not found");
+    }
+    return result;
   }
 
   async syncUserData(payload: CreateUserInput) {
