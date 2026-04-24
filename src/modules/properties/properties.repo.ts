@@ -48,12 +48,12 @@ export class PropertyRepository {
       .get();
   }
 
-  async create(input: CreatePropertyInput) {
-    const [property] = await this.db
-      .insert(propertiesTable)
-      .values(input)
-      .returning();
-    return property;
+  async create(input: CreatePropertyInput[], userId: string) {
+    const data = input.map((property) => ({
+      ...property,
+      propertyAgentId: userId,
+    }));
+    return await this.db.insert(propertiesTable).values(data).returning();
   }
 
   async update(id: string, input: Partial<CreatePropertyInput>) {

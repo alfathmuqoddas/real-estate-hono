@@ -4,7 +4,7 @@ import { PropertiesService } from "./properties.service";
 import { PropertyRepository } from "./properties.repo";
 import type { Bindings, UserContext } from "@/types";
 import { firebaseAuthMiddleware, roleMiddleware } from "@/middleware";
-import { propertyQuerySchema } from "./dto";
+import { createPropertyInputSchema, propertyQuerySchema } from "./dto";
 import { BadRequestError } from "@/errors/http-errors";
 
 const propertyRoutes = new Hono<{
@@ -31,11 +31,16 @@ propertyRoutes.get("/:id", async (c) => {
   return c.json(results);
 });
 
-propertyRoutes.post("/", async (c) => {
+propertyRoutes.post("/", firebaseAuthMiddleware, async (c) => {
   const body = await c.req.json();
+  const parsed = createPropertyInputSchema.safeParse(body);
+  if (!parsed.success) {
+    throw new BadRequestError(parsed.error.issues[0].message);
+  }
+  const user = c.get("userFirebase");
   const db = getDb(c.env);
   const service = new PropertiesService(new PropertyRepository(db));
-  const results = await service.createProperty(body);
+  const results = await service.createProperty(parsed.data, user.uid);
   return c.json(results);
 });
 

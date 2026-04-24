@@ -11,8 +11,19 @@ import { UserContext } from "@/types";
 export class PropertiesService {
   constructor(private repo: PropertyRepository) {}
 
-  async createProperty(input: CreatePropertyInput) {
-    await this.repo.create(input);
+  async createProperty(input: CreatePropertyInput[], userId: string) {
+    if (!userId) {
+      throw new BadRequestError("User id is required");
+    }
+    if (input.length === 0) {
+      throw new BadRequestError("No properties to create");
+    }
+    if (!Array.isArray(input)) {
+      throw new BadRequestError("Body must be an array");
+    }
+    const result = await this.repo.create(input, userId);
+
+    return { message: `Succesfully created ${result.length} properties` };
   }
 
   async getAllProperties(query: PropertyQuery) {

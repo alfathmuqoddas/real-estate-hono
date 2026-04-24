@@ -13,7 +13,7 @@ export const propertiesTable = sqliteTable("properties", {
   propertyDeskripsi: text("property_deskripsi").notNull(),
   propertyPrice: integer("property_price").notNull(),
   propertyListingType: text("listing_type", {
-    enum: ["sale", "rent"],
+    enum: ["sell", "rent"],
   }).notNull(),
   propertyLuasTanah: integer("property_luas_tanah").notNull(),
   propertyLuasBangunan: integer("property_luas_bangunan").notNull(),
