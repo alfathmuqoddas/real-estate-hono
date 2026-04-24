@@ -2,10 +2,10 @@ import { PropertyRepository } from "./properties.repo";
 import type { CreatePropertyInput } from "./dto";
 import {
   NotFoundError,
-  UnauthorizedError,
   ForbiddenError,
   BadRequestError,
 } from "@/errors/http-errors";
+import type { PropertyQuery } from "./dto";
 
 export class PropertiesService {
   constructor(private repo: PropertyRepository) {}
@@ -14,8 +14,18 @@ export class PropertiesService {
     await this.repo.create(input);
   }
 
-  async getAllProperties() {
-    await this.repo.findAll();
+  async getAllProperties(query: PropertyQuery) {
+    if (!query.province) {
+      throw new BadRequestError("Province is required");
+    }
+    const normalized = {
+      ...query,
+      page: Math.max(query.page ?? 1, 1),
+      limit: Math.min(query.limit ?? 10, 50),
+      sortBy: query.sortBy ?? "createdAt",
+      order: query.order ?? "desc",
+    };
+    await this.repo.findAll(normalized);
   }
 
   async getPropertyById(id: string) {
