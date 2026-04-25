@@ -27,9 +27,6 @@ export class PropertiesService {
   }
 
   async getAllProperties(query: PropertyQuery) {
-    if (!query.province) {
-      throw new BadRequestError("Province is required");
-    }
     const normalized = {
       ...query,
       page: Math.max(query.page ?? 1, 1),
@@ -37,7 +34,7 @@ export class PropertiesService {
       sortBy: query.sortBy ?? "createdAt",
       order: query.order ?? "desc",
     };
-    await this.repo.findAll(normalized);
+    return await this.repo.findAll(normalized);
   }
 
   async getPropertyById(id: string) {

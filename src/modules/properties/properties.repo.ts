@@ -14,20 +14,36 @@ export class PropertyRepository {
     const where = buildPropertyFilters(query);
     const orderBy = buildPropertyOrder(query);
 
-    const data = await this.db
-      .select()
-      .from(propertiesTable)
-      .where(where)
-      .orderBy(...orderBy)
-      .limit(limit)
-      .offset(offset);
+    const data = await this.db.query.propertiesTable.findMany({
+      where,
+      orderBy,
+      limit,
+      offset,
+      with: {
+        owner: {
+          columns: {
+            id: true,
+            email: true,
+            name: true,
+            photoUrl: true,
+          },
+        },
+        images: {
+          columns: {
+            id: true,
+            imageUrl: true,
+          },
+        },
+      },
+    });
 
-    const [{ count }] = await this.db
+    const result = await this.db
       .select({ count: sql<number>`count(*)` })
       .from(propertiesTable)
       .where(where);
 
-    const total = Number(count);
+    const rawCount = result[0]?.count ?? 0;
+    const total = Number(rawCount);
 
     return {
       data,
@@ -35,7 +51,7 @@ export class PropertyRepository {
         page,
         limit,
         total,
-        totalPages: Math.ceil(count / limit),
+        totalPages: total === 0 ? 0 : Math.ceil(total / limit),
       },
     };
   }
