@@ -7,7 +7,8 @@ export class PropertyRepository {
   constructor(private db: ReturnType<typeof import("@/db").getDb>) {}
 
   async findAll(query: PropertyQuery) {
-    let { page, limit } = query;
+    const page = Math.max(1, Number(query.page ?? 1));
+    const limit = Math.min(50, Number(query.limit ?? 10));
 
     const offset = (page - 1) * limit;
 

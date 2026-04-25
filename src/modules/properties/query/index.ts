@@ -17,38 +17,46 @@ export function buildPropertyFilters(query: PropertyQuery) {
   }
 
   if (query.minPrice !== undefined) {
-    conditions.push(gte(propertiesTable.propertyPrice, query.minPrice));
+    conditions.push(gte(propertiesTable.propertyPrice, Number(query.minPrice)));
   }
 
   if (query.maxPrice !== undefined) {
-    conditions.push(lte(propertiesTable.propertyPrice, query.maxPrice));
+    conditions.push(lte(propertiesTable.propertyPrice, Number(query.maxPrice)));
   }
 
   if (query.bathrooms !== undefined) {
-    conditions.push(eq(propertiesTable.propertyKamarMandi, query.bathrooms));
+    conditions.push(
+      eq(propertiesTable.propertyKamarMandi, Number(query.bathrooms)),
+    );
   }
 
   if (query.bedrooms !== undefined) {
-    conditions.push(eq(propertiesTable.propertyKamarTidur, query.bedrooms));
+    conditions.push(
+      eq(propertiesTable.propertyKamarTidur, Number(query.bedrooms)),
+    );
   }
 
   if (query.minLotSize !== undefined) {
-    conditions.push(gte(propertiesTable.propertyLuasTanah, query.minLotSize));
+    conditions.push(
+      gte(propertiesTable.propertyLuasTanah, Number(query.minLotSize)),
+    );
   }
 
   if (query.maxLotSize !== undefined) {
-    conditions.push(lte(propertiesTable.propertyLuasTanah, query.maxLotSize));
+    conditions.push(
+      lte(propertiesTable.propertyLuasTanah, Number(query.maxLotSize)),
+    );
   }
 
   if (query.minFloorSize !== undefined) {
     conditions.push(
-      gte(propertiesTable.propertyLuasBangunan, query.minFloorSize),
+      gte(propertiesTable.propertyLuasBangunan, Number(query.minFloorSize)),
     );
   }
 
   if (query.maxFloorSize !== undefined) {
     conditions.push(
-      lte(propertiesTable.propertyLuasBangunan, query.maxFloorSize),
+      lte(propertiesTable.propertyLuasBangunan, Number(query.maxFloorSize)),
     );
   }
 

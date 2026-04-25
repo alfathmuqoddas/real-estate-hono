@@ -41,8 +41,8 @@ export const propertyQuerySchema = z
     minFloorSize: z.coerce.number().optional(),
     maxFloorSize: z.coerce.number().optional(),
 
-    type: z.enum(["rumah", "apartemen"]).default("rumah"),
-    listingType: z.enum(["sell", "rent"]).default("sell"),
+    type: z.enum(["rumah", "apartemen"]).optional(),
+    listingType: z.enum(["sell", "rent"]).optional(),
 
     province: z.string().optional(),
     city: z.string().optional(),
