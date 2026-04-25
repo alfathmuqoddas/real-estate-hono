@@ -8,10 +8,10 @@ export const propertyImagesTable = sqliteTable("property_images", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => uuidv7()),
-  propertyId: integer("property_id")
+  propertyId: text("property_id")
     .notNull()
     .references(() => propertiesTable.id),
-  userId: integer("user_id")
+  userId: text("user_id")
     .notNull()
     .references(() => usersTable.id),
   imageUrl: text("image_url").notNull(),

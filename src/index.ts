@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import propertyRoutes from "@/modules/properties/properties.route";
 import userRoutes from "@/modules/users/users.route";
+import propertyImagesRoutes from "@/modules/propertyImages/propertyImages.route";
 import { AppError } from "./errors/app-error";
 import { cors } from "hono/cors";
 
@@ -18,6 +19,7 @@ app.use(
 
 app.route("/listings", propertyRoutes);
 app.route("/users", userRoutes);
+app.route("/property-images", propertyImagesRoutes);
 
 app.onError((err, c) => {
   console.error("GLOBAL ERROR:", err);
