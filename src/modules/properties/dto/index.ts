@@ -44,7 +44,7 @@ export const propertyQuerySchema = z
     type: z.enum(["rumah", "apartemen"]).default("rumah"),
     listingType: z.enum(["sell", "rent"]).default("sell"),
 
-    province: z.string().min(1, "Province is required"),
+    province: z.string().optional(),
     city: z.string().optional(),
 
     sortBy: z.enum(["price", "lotSize", "floorSize", "createdAt"]).optional(),

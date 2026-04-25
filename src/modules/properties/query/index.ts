@@ -6,7 +6,11 @@ export function buildPropertyFilters(query: PropertyQuery) {
   const conditions = [];
 
   // mandatory
-  conditions.push(eq(propertiesTable.propertyAddressProvince, query.province));
+  if (query.province) {
+    conditions.push(
+      eq(propertiesTable.propertyAddressProvince, query.province),
+    );
+  }
 
   if (query.city) {
     conditions.push(eq(propertiesTable.propertyAddressCity, query.city));
