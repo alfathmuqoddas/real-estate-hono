@@ -8,9 +8,7 @@ export const propertyImagesTable = sqliteTable("property_images", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => uuidv7()),
-  propertyId: text("property_id")
-    .notNull()
-    .references(() => propertiesTable.id),
+  propertyId: text("property_id").references(() => propertiesTable.id),
   userId: text("user_id")
     .notNull()
     .references(() => usersTable.id),

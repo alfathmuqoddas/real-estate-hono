@@ -20,6 +20,19 @@ export class PropertyRepository {
       orderBy,
       limit,
       offset,
+      columns: {
+        id: true,
+        propertyAddressProvince: true,
+        propertyAddressCity: true,
+        propertyPrice: true,
+        propertyKamarMandi: true,
+        propertyKamarTidur: true,
+        propertyLuasTanah: true,
+        propertyLuasBangunan: true,
+        propertyType: true,
+        propertyListingType: true,
+        createdAt: true,
+      },
       with: {
         owner: {
           columns: {
@@ -30,6 +43,7 @@ export class PropertyRepository {
           },
         },
         images: {
+          limit: 5,
           columns: {
             id: true,
             imageUrl: true,
@@ -58,11 +72,25 @@ export class PropertyRepository {
   }
 
   async findById(id: string) {
-    return await this.db
-      .select()
-      .from(propertiesTable)
-      .where(eq(propertiesTable.id, id))
-      .get();
+    return await this.db.query.propertiesTable.findFirst({
+      where: eq(propertiesTable.id, id),
+      with: {
+        owner: {
+          columns: {
+            id: true,
+            email: true,
+            name: true,
+            photoUrl: true,
+          },
+        },
+        images: {
+          columns: {
+            id: true,
+            imageUrl: true,
+          },
+        },
+      },
+    });
   }
 
   async create(input: CreatePropertyInput[], userId: string) {

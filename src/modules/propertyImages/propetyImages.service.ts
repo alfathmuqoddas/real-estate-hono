@@ -19,4 +19,11 @@ export class PropertyImageService {
 
     return { message: `Succesfully created ${result.length} images` };
   }
+
+  async getPropertyImages(propertyId: string) {
+    if (!propertyId) {
+      throw new BadRequestError("Property id is required");
+    }
+    return await this.repo.findByPropertyId(propertyId);
+  }
 }

@@ -25,4 +25,11 @@ propertyImagesRoutes.post("/", firebaseAuthMiddleware, async (c) => {
   return c.json(results);
 });
 
+propertyImagesRoutes.get("/:propertyId", async (c) => {
+  const db = getDb(c.env);
+  const service = new PropertyImageService(new PropertyImageRepository(db));
+  const results = await service.getPropertyImages(c.req.param("propertyId"));
+  return c.json(results);
+});
+
 export default propertyImagesRoutes;
