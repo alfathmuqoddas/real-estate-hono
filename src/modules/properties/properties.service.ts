@@ -26,7 +26,7 @@ export class PropertiesService {
     return { message: `Succesfully created ${result.length} properties` };
   }
 
-  async getAllProperties(query: PropertyQuery) {
+  async getAllProperties(query: PropertyQuery, userId?: string) {
     const normalized = {
       ...query,
       page: Math.max(query.page ?? 1, 1),
@@ -34,14 +34,14 @@ export class PropertiesService {
       sortBy: query.sortBy ?? "createdAt",
       order: query.order ?? "desc",
     };
-    return await this.repo.findAll(normalized);
+    return await this.repo.findAll(normalized, userId);
   }
 
-  async getPropertyById(id: string) {
+  async getPropertyById(id: string, userId?: string) {
     if (!id) {
       throw new BadRequestError("Property id is required");
     }
-    const result = await this.repo.findById(id);
+    const result = await this.repo.findById(id, userId);
     if (!result) {
       throw new NotFoundError("Property not found");
     }

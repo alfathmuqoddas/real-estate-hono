@@ -1,6 +1,7 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { usersTable } from "@/modules/users/users.model";
 import { propertyImagesTable } from "../propertyImages/propertyImages.model";
+import { favoritesTable } from "../favorites/favorites.model";
 import { v7 as uuidv7 } from "uuid";
 import { relations } from "drizzle-orm";
 
@@ -63,5 +64,6 @@ export const propertiesRelations = relations(
       references: [usersTable.id],
     }),
     images: many(propertyImagesTable),
+    favorites: many(favoritesTable),
   }),
 );

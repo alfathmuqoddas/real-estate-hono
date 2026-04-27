@@ -3,7 +3,11 @@ import { getDb } from "@/db";
 import { PropertiesService } from "./properties.service";
 import { PropertyRepository } from "./properties.repo";
 import type { Bindings, UserContext } from "@/types";
-import { firebaseAuthMiddleware, roleMiddleware } from "@/middleware";
+import {
+  firebaseAuthMiddleware,
+  roleMiddleware,
+  firebaseAuthOptionalMiddleware,
+} from "@/middleware";
 import { createPropertyInputSchema, propertyQuerySchema } from "./dto";
 import { BadRequestError } from "@/errors/http-errors";
 
@@ -12,22 +16,24 @@ const propertyRoutes = new Hono<{
   Variables: UserContext;
 }>();
 
-propertyRoutes.get("/", async (c) => {
+propertyRoutes.get("/", firebaseAuthOptionalMiddleware, async (c) => {
   const query = c.req.query();
+  const user = c.get("userFirebase");
   const parsed = propertyQuerySchema.safeParse(query);
   if (!parsed.success) {
     throw new BadRequestError(parsed.error.issues[0].message);
   }
   const db = getDb(c.env);
   const service = new PropertiesService(new PropertyRepository(db));
-  const results = await service.getAllProperties(parsed.data);
+  const results = await service.getAllProperties(parsed.data, user?.uid);
   return c.json(results);
 });
 
-propertyRoutes.get("/:id", async (c) => {
+propertyRoutes.get("/:id", firebaseAuthOptionalMiddleware, async (c) => {
   const db = getDb(c.env);
+  const user = c.get("userFirebase");
   const service = new PropertiesService(new PropertyRepository(db));
-  const results = await service.getPropertyById(c.req.param("id"));
+  const results = await service.getPropertyById(c.req.param("id"), user?.uid);
   return c.json(results);
 });
 

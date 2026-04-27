@@ -6,7 +6,7 @@ import { buildPropertyFilters, buildPropertyOrder } from "./query";
 export class PropertyRepository {
   constructor(private db: ReturnType<typeof import("@/db").getDb>) {}
 
-  async findAll(query: PropertyQuery) {
+  async findAll(query: PropertyQuery, userId?: string) {
     const page = Math.max(1, Number(query.page ?? 1));
     const limit = Math.min(50, Number(query.limit ?? 10));
 
@@ -23,6 +23,8 @@ export class PropertyRepository {
       columns: {
         id: true,
         propertyAddressProvince: true,
+        propertyDeskripsi: true,
+        propertyTitle: true,
         propertyAddressCity: true,
         propertyPrice: true,
         propertyKamarMandi: true,
@@ -31,6 +33,8 @@ export class PropertyRepository {
         propertyLuasBangunan: true,
         propertyType: true,
         propertyListingType: true,
+        //how?
+        isFavorite: true,
         createdAt: true,
       },
       with: {
@@ -43,12 +47,17 @@ export class PropertyRepository {
           },
         },
         images: {
-          limit: 5,
           columns: {
             id: true,
             imageUrl: true,
           },
         },
+        favorites: userId
+          ? {
+              where: (fav, { eq }) => eq(fav.userId, userId),
+              columns: { id: true },
+            }
+          : undefined,
       },
     });
 
@@ -71,7 +80,7 @@ export class PropertyRepository {
     };
   }
 
-  async findById(id: string) {
+  async findById(id: string, userId?: string) {
     return await this.db.query.propertiesTable.findFirst({
       where: eq(propertiesTable.id, id),
       with: {
@@ -89,6 +98,12 @@ export class PropertyRepository {
             imageUrl: true,
           },
         },
+        favorites: userId
+          ? {
+              where: (fav, { eq }) => eq(fav.userId, userId),
+              columns: { id: true },
+            }
+          : undefined,
       },
     });
   }
