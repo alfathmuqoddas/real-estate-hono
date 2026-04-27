@@ -2,6 +2,7 @@ import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 import { propertiesTable } from "@/modules/properties/properties.model";
 import { propertyImagesTable } from "../propertyImages/propertyImages.model";
+import { favoritesTable } from "../favorites/favorites.model";
 
 export const usersTable = sqliteTable("users", {
   id: text("id").primaryKey(), // Firebase UID
@@ -36,4 +37,5 @@ export type SelectUser = typeof usersTable.$inferSelect;
 export const usersRelations = relations(usersTable, ({ many }) => ({
   properties: many(propertiesTable),
   propertyImages: many(propertyImagesTable),
+  favorites: many(favoritesTable),
 }));
