@@ -1,4 +1,4 @@
-import { and, eq, asc, desc } from "drizzle-orm";
+import { and, eq, asc, desc, sql } from "drizzle-orm";
 import { favoritesTable } from "./favorites.model";
 import type { FavoritesQuery } from "./dto";
 
@@ -20,7 +20,7 @@ export class FavoriteRepository {
 
     const offset = (page - 1) * limit;
 
-    return await this.db.query.favoritesTable.findMany({
+    const data = await this.db.query.favoritesTable.findMany({
       limit,
       offset,
       orderBy:
@@ -30,8 +30,6 @@ export class FavoriteRepository {
       where: eq(favoritesTable.userId, userId),
       columns: {
         id: true,
-        propertyId: true,
-        createdAt: true,
       },
       with: {
         property: {
@@ -46,6 +44,8 @@ export class FavoriteRepository {
             propertyLuasBangunan: true,
             propertyType: true,
             propertyListingType: true,
+            propertyAddressCity: true,
+            propertyAddressProvince: true,
             isFavorite: true,
             createdAt: true,
           },
@@ -68,6 +68,24 @@ export class FavoriteRepository {
         },
       },
     });
+
+    const result = await this.db
+      .select({ count: sql<number>`count(*)` })
+      .from(favoritesTable)
+      .where(eq(favoritesTable.userId, userId));
+
+    const rawCount = result[0]?.count ?? 0;
+    const total = Number(rawCount);
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: total === 0 ? 0 : Math.ceil(total / limit),
+      },
+    };
   }
 
   async findAll(query: FavoritesQuery) {
@@ -76,7 +94,7 @@ export class FavoriteRepository {
 
     const offset = (page - 1) * limit;
 
-    return await this.db.query.favoritesTable.findMany({
+    const data = await this.db.query.favoritesTable.findMany({
       limit,
       offset,
       orderBy:
@@ -85,8 +103,6 @@ export class FavoriteRepository {
           : desc(favoritesTable.createdAt),
       columns: {
         id: true,
-        propertyId: true,
-        createdAt: true,
       },
       with: {
         property: {
@@ -101,6 +117,8 @@ export class FavoriteRepository {
             propertyLuasBangunan: true,
             propertyType: true,
             propertyListingType: true,
+            propertyAddressCity: true,
+            propertyAddressProvince: true,
             isFavorite: true,
             createdAt: true,
           },
@@ -131,6 +149,23 @@ export class FavoriteRepository {
         },
       },
     });
+
+    const result = await this.db
+      .select({ count: sql<number>`count(*)` })
+      .from(favoritesTable);
+
+    const rawCount = result[0]?.count ?? 0;
+    const total = Number(rawCount);
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: total === 0 ? 0 : Math.ceil(total / limit),
+      },
+    };
   }
 
   async create(userId: string, propertyId: string) {
