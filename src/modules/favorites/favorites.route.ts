@@ -3,7 +3,7 @@ import { getDb } from "@/db";
 import { FavoriteService } from "./favorites.service";
 import { FavoriteRepository } from "./favorites.repo";
 import type { Bindings, UserContext } from "@/types";
-import { firebaseAuthMiddleware } from "@/middleware";
+import { firebaseAuthMiddleware, roleMiddleware } from "@/middleware";
 import { favoritesQuerySchema } from "./dto";
 import { BadRequestError } from "@/errors/http-errors";
 
@@ -22,6 +22,23 @@ favoritesRoutes.post("/:propertyId", firebaseAuthMiddleware, async (c) => {
   );
   return c.json(results);
 });
+
+favoritesRoutes.get(
+  "/all-favorites",
+  firebaseAuthMiddleware,
+  roleMiddleware,
+  async (c) => {
+    const parsedQuery = favoritesQuerySchema.safeParse(c.req.query());
+    if (!parsedQuery.success) {
+      throw new BadRequestError(parsedQuery.error.issues[0].message);
+    }
+    const role = c.get("userRole");
+    const db = getDb(c.env);
+    const service = new FavoriteService(new FavoriteRepository(db), db);
+    const results = await service.getAllFavorites(role, parsedQuery.data);
+    return c.json(results);
+  },
+);
 
 favoritesRoutes.get("/my-favorites", firebaseAuthMiddleware, async (c) => {
   const parsedQuery = favoritesQuerySchema.safeParse(c.req.query());
