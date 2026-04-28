@@ -1,11 +1,16 @@
 import { FavoriteRepository } from "./favorites.repo";
 import { BadRequestError } from "@/errors/http-errors";
+import type { FavoritesQuery } from "./dto";
 
 export class FavoriteService {
   constructor(
     private repo: FavoriteRepository,
     private db: ReturnType<typeof import("@/db").getDb>,
   ) {}
+
+  async getFavoritesByUserId(query: FavoritesQuery, userId: string) {
+    return await this.repo.findByUserId(query, userId);
+  }
 
   async toggleFavorite(userId: string, propertyId: string) {
     if (!userId) {
