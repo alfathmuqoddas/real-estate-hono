@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.10",
+    "firebase-admin": "^13.8.0",
     "wrangler": "^4.4.0"
   }
 }
