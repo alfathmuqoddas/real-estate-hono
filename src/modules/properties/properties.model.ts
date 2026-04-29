@@ -4,6 +4,7 @@ import { propertyImagesTable } from "../propertyImages/propertyImages.model";
 import { favoritesTable } from "../favorites/favorites.model";
 import { v7 as uuidv7 } from "uuid";
 import { relations } from "drizzle-orm";
+import { propertyToFeatures } from "../propertyFeatures/propertyFeatures.model";
 
 export const propertiesTable = sqliteTable("properties", {
   id: text("id")
@@ -48,9 +49,9 @@ export const propertiesTable = sqliteTable("properties", {
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
     () => new Date(),
   ),
-  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(
-    () => new Date(),
-  ),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .$defaultFn(() => new Date())
+    .$onUpdate(() => new Date()),
 });
 
 export type InsertPost = typeof propertiesTable.$inferInsert;
@@ -65,5 +66,6 @@ export const propertiesRelations = relations(
     }),
     images: many(propertyImagesTable),
     favorites: many(favoritesTable),
+    features: many(propertyToFeatures),
   }),
 );

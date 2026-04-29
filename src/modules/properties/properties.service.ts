@@ -52,7 +52,6 @@ export class PropertiesService {
     id: string,
     input: Partial<CreatePropertyInput>,
     user: UserContext["userFirebase"],
-    role: UserContext["userRole"],
   ) {
     if (!id) {
       throw new BadRequestError("Property id is required");
@@ -68,11 +67,11 @@ export class PropertiesService {
       throw new NotFoundError("Property not found");
     }
 
-    if (role.role === "user") {
+    if (user.role === "user") {
       throw new ForbiddenError("User cannot update properties");
     }
 
-    if (role.role === "admin") {
+    if (user.role === "admin") {
       // Admins can update any property
       return await this.repo.update(id, input);
     }
@@ -86,11 +85,29 @@ export class PropertiesService {
     return await this.repo.update(id, input);
   }
 
-  async deleteProperty(
-    id: string,
+  async bulkUpdateProperties(
     user: UserContext["userFirebase"],
-    role: UserContext["userRole"],
+    inputs: (Partial<CreatePropertyInput> & { id: string })[],
   ) {
+    if (!inputs.length) {
+      throw new BadRequestError("No properties to update");
+    }
+
+    if (inputs.some((input) => !input.id)) {
+      throw new BadRequestError("All inputs must have an id");
+    }
+
+    if (!Array.isArray(inputs)) {
+      throw new BadRequestError("Body must be an array");
+    }
+
+    if (user.role !== "admin") {
+      throw new ForbiddenError("Only admins can update properties");
+    }
+    return await this.repo.bulkUpdate(inputs);
+  }
+
+  async deleteProperty(id: string, user: UserContext["userFirebase"]) {
     if (!id) {
       throw new BadRequestError("Property id is required");
     }
@@ -101,11 +118,11 @@ export class PropertiesService {
       throw new NotFoundError("Property not found");
     }
 
-    if (role.role === "user") {
+    if (user.role === "user") {
       throw new ForbiddenError("User cannot delete properties");
     }
 
-    if (role.role === "admin") {
+    if (user.role === "admin") {
       return this.repo.delete(id);
     }
 

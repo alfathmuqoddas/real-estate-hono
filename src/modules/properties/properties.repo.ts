@@ -1,6 +1,6 @@
 import { CreatePropertyInput, PropertyQuery } from "./dto";
 import { propertiesTable } from "./properties.model";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, inArray } from "drizzle-orm";
 import { buildPropertyFilters, buildPropertyOrder } from "./query";
 
 export class PropertyRepository {
@@ -104,6 +104,11 @@ export class PropertyRepository {
               columns: { id: true },
             }
           : undefined,
+        features: {
+          with: {
+            feature: true,
+          },
+        },
       },
     });
   }
@@ -123,6 +128,26 @@ export class PropertyRepository {
       .where(eq(propertiesTable.id, id))
       .returning();
     return property;
+  }
+
+  async bulkUpdate(inputs: (Partial<CreatePropertyInput> & { id: string })[]) {
+    return await this.db.transaction(async (tx) => {
+      const promises = inputs.map((input) => {
+        const { id, ...updateData } = input;
+
+        return tx
+          .update(propertiesTable)
+          .set({
+            ...updateData,
+            updatedAt: new Date(),
+          })
+          .where(eq(propertiesTable.id, id))
+          .returning();
+      });
+
+      const results = await Promise.all(promises);
+      return results.flat();
+    });
   }
 
   async delete(id: string) {
