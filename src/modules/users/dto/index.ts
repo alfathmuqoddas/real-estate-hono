@@ -3,4 +3,5 @@ export type CreateUserInput = {
   email: string;
   name: string;
   photoUrl: string;
+  role: "admin" | "agent" | "user";
 };

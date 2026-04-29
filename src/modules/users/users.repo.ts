@@ -21,6 +21,7 @@ export class UserRepository {
         email: input.email,
         name: input.name,
         photoUrl: input.photoUrl,
+        role: input.role,
         createdAt: new Date(),
         lastLogin: new Date(),
       })
@@ -29,6 +30,7 @@ export class UserRepository {
         set: {
           lastLogin: new Date(),
           name: input.name,
+          role: input.role,
           photoUrl: input.photoUrl,
           email: input.email,
         },

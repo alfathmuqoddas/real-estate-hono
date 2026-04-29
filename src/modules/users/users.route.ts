@@ -6,7 +6,6 @@ import type { Bindings, UserContext } from "@/types";
 import {
   firebaseAuthMiddleware,
   firebaseAuthOptionalMiddleware,
-  roleMiddleware,
 } from "@/middleware";
 
 const userRoutes = new Hono<{
@@ -22,18 +21,12 @@ userRoutes.get("/sync", firebaseAuthMiddleware, async (c) => {
   return c.json(results);
 });
 
-userRoutes.get(
-  "/protected",
-  firebaseAuthMiddleware,
-  roleMiddleware,
-  async (c) => {
-    const user = c.get("userFirebase");
-    const role = c.get("userRole");
-    return c.json({
-      message: `Hello ${user.name}! Your id is ${user.uid}, and your role is ${role.role}`,
-    });
-  },
-);
+userRoutes.get("/protected", firebaseAuthMiddleware, async (c) => {
+  const user = c.get("userFirebase");
+  return c.json({
+    message: `Hello ${user.name}! Your id is ${user.uid}, and your role is ${user.role}`,
+  });
+});
 
 userRoutes.get("/soft-protected", firebaseAuthOptionalMiddleware, async (c) => {
   const user = c.get("userFirebase");

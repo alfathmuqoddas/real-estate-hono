@@ -11,8 +11,6 @@ export type UserContext = {
     email: string;
     name: string;
     photoUrl: string;
-  };
-  userRole: {
-    role: "user" | "admin" | "agent";
+    role: "admin" | "agent" | "user";
   };
 };

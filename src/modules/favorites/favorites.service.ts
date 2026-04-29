@@ -10,8 +10,11 @@ export class FavoriteService {
     private db: ReturnType<typeof import("@/db").getDb>,
   ) {}
 
-  async getAllFavorites(role: UserContext["userRole"], query: FavoritesQuery) {
-    if (role.role !== "admin") {
+  async getAllFavorites(
+    user: UserContext["userFirebase"],
+    query: FavoritesQuery,
+  ) {
+    if (user.role !== "admin") {
       throw new ForbiddenError("Only admins can view all favorites");
     }
     return await this.repo.findAll(query);
