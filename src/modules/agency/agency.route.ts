@@ -55,3 +55,5 @@ agencyRoutes.delete("/:id", firebaseAuthMiddleware, async (c) => {
   const results = await service.delete(c.req.param("id"), user);
   return c.json(results);
 });
+
+export default agencyRoutes;
