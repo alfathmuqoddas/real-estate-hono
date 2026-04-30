@@ -2,15 +2,12 @@ import { Hono } from "hono";
 import { getDb } from "@/db";
 import { FavoriteService } from "./favorites.service";
 import { FavoriteRepository } from "./favorites.repo";
-import type { Bindings, UserContext } from "@/types";
+import type { AppEnv } from "@/types";
 import { firebaseAuthMiddleware } from "@/middleware";
 import { favoritesQuerySchema } from "./dto";
 import { BadRequestError } from "@/errors/http-errors";
 
-const favoritesRoutes = new Hono<{
-  Bindings: Bindings;
-  Variables: UserContext;
-}>();
+const favoritesRoutes = new Hono<AppEnv>();
 
 favoritesRoutes.post("/:propertyId", firebaseAuthMiddleware, async (c) => {
   const user = c.get("userFirebase");

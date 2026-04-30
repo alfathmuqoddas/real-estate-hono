@@ -7,8 +7,9 @@ import agencyRoutes from "@/modules/agency/agency.route";
 import propertyFeaturesRoutes from "@/modules/propertyFeatures/propertyFeatures.route";
 import { AppError } from "./errors/app-error";
 import { cors } from "hono/cors";
+import { AppEnv } from "./types";
 
-const app = new Hono();
+const app = new Hono<AppEnv>();
 
 app.use(
   "*",

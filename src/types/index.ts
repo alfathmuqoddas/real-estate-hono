@@ -14,3 +14,8 @@ export type UserContext = {
     role: "admin" | "agent" | "user";
   };
 };
+
+export type AppEnv = {
+  Bindings: Bindings;
+  Variables: UserContext;
+};

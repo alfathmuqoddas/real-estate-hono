@@ -2,14 +2,11 @@ import { Hono } from "hono";
 import { getDb } from "@/db";
 import { PropertyFeaturesService } from "./propertyFeatures.service";
 import { PropertyFeaturesRepository } from "./propertyFeatures.repo";
-import type { Bindings, UserContext } from "@/types";
+import type { AppEnv } from "@/types";
 import { firebaseAuthMiddleware } from "@/middleware";
 import { propertyFeaturesSchema } from "./schema";
 
-const propertyFeaturesRoutes = new Hono<{
-  Bindings: Bindings;
-  Variables: UserContext;
-}>();
+const propertyFeaturesRoutes = new Hono<AppEnv>();
 
 propertyFeaturesRoutes.get("/", async (c) => {
   const db = getDb(c.env);

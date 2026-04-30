@@ -2,14 +2,11 @@ import { Hono } from "hono";
 import { getDb } from "@/db";
 import { AgencyService } from "./agency.service";
 import { AgencyRepository } from "./agency.repo";
-import type { Bindings, UserContext } from "@/types";
+import type { AppEnv } from "@/types";
 import { firebaseAuthMiddleware } from "@/middleware";
 import { agencySchema } from "./schema";
 
-const agencyRoutes = new Hono<{
-  Bindings: Bindings;
-  Variables: UserContext;
-}>();
+const agencyRoutes = new Hono<AppEnv>();
 
 agencyRoutes.get("/", firebaseAuthMiddleware, async (c) => {
   const db = getDb(c.env);

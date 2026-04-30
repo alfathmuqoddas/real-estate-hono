@@ -2,16 +2,13 @@ import { Hono } from "hono";
 import { getDb } from "@/db";
 import { UserService } from "./users.service";
 import { UserRepository } from "./users.repo";
-import type { Bindings, UserContext } from "@/types";
+import type { AppEnv } from "@/types";
 import {
   firebaseAuthMiddleware,
   firebaseAuthOptionalMiddleware,
 } from "@/middleware";
 
-const userRoutes = new Hono<{
-  Bindings: Bindings;
-  Variables: UserContext;
-}>();
+const userRoutes = new Hono<AppEnv>();
 
 userRoutes.get("/sync", firebaseAuthMiddleware, async (c) => {
   const db = getDb(c.env);

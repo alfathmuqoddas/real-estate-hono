@@ -2,15 +2,12 @@ import { Hono } from "hono";
 import { getDb } from "@/db";
 import { PropertyImageService } from "./propetyImages.service";
 import { PropertyImageRepository } from "./propertyImages.repo";
-import type { Bindings, UserContext } from "@/types";
+import type { AppEnv } from "@/types";
 import { firebaseAuthMiddleware } from "@/middleware";
 import { createPropertyImageInputSchema } from "./dto";
 import { BadRequestError } from "@/errors/http-errors";
 
-const propertyImagesRoutes = new Hono<{
-  Bindings: Bindings;
-  Variables: UserContext;
-}>();
+const propertyImagesRoutes = new Hono<AppEnv>();
 
 propertyImagesRoutes.post("/", firebaseAuthMiddleware, async (c) => {
   const body = await c.req.json();
