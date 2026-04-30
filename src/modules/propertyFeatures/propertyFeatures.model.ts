@@ -11,7 +11,7 @@ export const propertyFeaturesTable = sqliteTable("property_features", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   featureName: text("feature_name").notNull(),
   featureIcon: text("feature_icon").notNull(),
-  featurePropertyType: text("feature_property_type").notNull(),
+  featurePropertyType: text("feature_property_type"),
   featureSubtype: text("feature_subtype"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
     () => new Date(),
