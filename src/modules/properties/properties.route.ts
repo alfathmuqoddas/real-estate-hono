@@ -2,18 +2,19 @@ import { Hono } from "hono";
 import { getDb } from "@/db";
 import { PropertiesService } from "./properties.service";
 import { PropertyRepository } from "./properties.repo";
-import type { Bindings, UserContext } from "@/types";
+import type { AppEnv } from "@/types";
 import {
   firebaseAuthMiddleware,
   firebaseAuthOptionalMiddleware,
 } from "@/middleware";
-import { createPropertyInputSchema, propertyQuerySchema } from "./dto";
+import {
+  createPropertyInputSchema,
+  updatePropertyInputSchema,
+  propertyQuerySchema,
+} from "./dto";
 import { BadRequestError } from "@/errors/http-errors";
 
-const propertyRoutes = new Hono<{
-  Bindings: Bindings;
-  Variables: UserContext;
-}>();
+const propertyRoutes = new Hono<AppEnv>();
 
 propertyRoutes.get("/", firebaseAuthOptionalMiddleware, async (c) => {
   const query = c.req.query();
@@ -45,7 +46,7 @@ propertyRoutes.post("/", firebaseAuthMiddleware, async (c) => {
   const user = c.get("userFirebase");
   const db = getDb(c.env);
   const service = new PropertiesService(new PropertyRepository(db));
-  const results = await service.createProperty(parsed.data, user.uid);
+  const results = await service.createProperty(parsed.data, user);
   return c.json(results);
 });
 
@@ -60,6 +61,10 @@ propertyRoutes.put("/bulk", firebaseAuthMiddleware, async (c) => {
 
 propertyRoutes.put("/:id", firebaseAuthMiddleware, async (c) => {
   const body = await c.req.json();
+  const parsed = updatePropertyInputSchema.safeParse(body);
+  if (!parsed.success) {
+    throw new BadRequestError(parsed.error.issues[0].message);
+  }
   const db = getDb(c.env);
   const userContext = c.get("userFirebase");
   const service = new PropertiesService(new PropertyRepository(db));

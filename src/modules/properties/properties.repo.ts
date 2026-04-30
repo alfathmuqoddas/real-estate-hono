@@ -1,6 +1,7 @@
 import { CreatePropertyInput, PropertyQuery } from "./dto";
 import { propertiesTable } from "./properties.model";
-import { eq, sql, inArray } from "drizzle-orm";
+import { propertyToFeatures } from "../propertyFeatures/propertyFeatures.model";
+import { eq, sql } from "drizzle-orm";
 import { buildPropertyFilters, buildPropertyOrder } from "./query";
 
 export class PropertyRepository {
@@ -58,6 +59,21 @@ export class PropertyRepository {
               columns: { id: true },
             }
           : undefined,
+        features: {
+          columns: {
+            propertyId: false,
+            featureId: false,
+          },
+          with: {
+            feature: {
+              columns: {
+                id: true,
+                featureName: true,
+                featureIcon: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -105,29 +121,91 @@ export class PropertyRepository {
             }
           : undefined,
         features: {
+          columns: {
+            propertyId: false,
+            featureId: false,
+          },
           with: {
-            feature: true,
+            feature: {
+              columns: {
+                id: true,
+                featureName: true,
+                featureIcon: true,
+              },
+            },
           },
         },
       },
     });
   }
 
-  async create(input: CreatePropertyInput[], userId: string) {
+  async createBulk(input: CreatePropertyInput[], userId: string) {
     const data = input.map((property) => ({
       ...property,
       propertyAgentId: userId,
     }));
+
     return await this.db.insert(propertiesTable).values(data).returning();
   }
 
-  async update(id: string, input: Partial<CreatePropertyInput>) {
-    const [property] = await this.db
-      .update(propertiesTable)
-      .set({ ...input, updatedAt: new Date() })
-      .where(eq(propertiesTable.id, id))
-      .returning();
-    return property;
+  async create(
+    input: CreatePropertyInput,
+    userId: string,
+    propertyFeatures?: string[],
+  ) {
+    return await this.db.transaction(async (tx) => {
+      const [property] = await tx
+        .insert(propertiesTable)
+        .values({ ...input, propertyAgentId: userId })
+        .returning();
+
+      if (propertyFeatures && propertyFeatures.length > 0) {
+        const propertyFeaturesData = propertyFeatures?.map((featureId) => ({
+          propertyId: property.id,
+          featureId: featureId,
+        }));
+
+        await tx.insert(propertyToFeatures).values(propertyFeaturesData);
+      }
+
+      return property;
+    });
+  }
+
+  async update(
+    id: string,
+    input: Partial<CreatePropertyInput>,
+    propertyFeatures?: string[],
+  ) {
+    return await this.db.transaction(async (tx) => {
+      const [property] = await tx
+        .update(propertiesTable)
+        .set({ ...input, updatedAt: new Date() })
+        .where(eq(propertiesTable.id, id))
+        .returning();
+
+      if (!property) {
+        tx.rollback();
+        return null;
+      }
+
+      if (propertyFeatures !== undefined) {
+        await tx
+          .delete(propertyToFeatures)
+          .where(eq(propertyToFeatures.propertyId, id));
+
+        if (propertyFeatures.length > 0) {
+          const featureData = propertyFeatures.map((fId) => ({
+            propertyId: id,
+            featureId: fId,
+          }));
+
+          await tx.insert(propertyToFeatures).values(featureData);
+        }
+      }
+
+      return property;
+    });
   }
 
   async bulkUpdate(inputs: (Partial<CreatePropertyInput> & { id: string })[]) {

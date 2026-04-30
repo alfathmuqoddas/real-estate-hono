@@ -11,19 +11,18 @@ import { UserContext } from "@/types";
 export class PropertiesService {
   constructor(private repo: PropertyRepository) {}
 
-  async createProperty(input: CreatePropertyInput[], userId: string) {
-    if (!userId) {
-      throw new BadRequestError("User id is required");
+  async createProperty(
+    input: CreatePropertyInput,
+    user: UserContext["userFirebase"],
+  ) {
+    if (!user.uid) throw new BadRequestError("User id is required");
+    //must be admin or agent role
+    if (user.role !== "admin" && user.role !== "agent") {
+      throw new ForbiddenError("Only admins or agent can create properties");
     }
-    if (input.length === 0) {
-      throw new BadRequestError("No properties to create");
-    }
-    if (!Array.isArray(input)) {
-      throw new BadRequestError("Body must be an array");
-    }
-    const result = await this.repo.create(input, userId);
 
-    return { message: `Succesfully created ${result.length} properties` };
+    await this.repo.create(input, user.uid, input.propertyFeatures);
+    return { message: `Succesfully created property` };
   }
 
   async getAllProperties(query: PropertyQuery, userId?: string) {
@@ -73,7 +72,7 @@ export class PropertiesService {
 
     if (user.role === "admin") {
       // Admins can update any property
-      return await this.repo.update(id, input);
+      return await this.repo.update(id, input, input.propertyFeatures);
     }
 
     if (property.propertyAgentId !== user.uid) {
@@ -82,7 +81,7 @@ export class PropertiesService {
       );
     }
 
-    return await this.repo.update(id, input);
+    return await this.repo.update(id, input, input.propertyFeatures);
   }
 
   async bulkUpdateProperties(
