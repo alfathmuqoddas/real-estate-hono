@@ -40,6 +40,15 @@ export class PropertyRepository {
       },
       with: {
         owner: {
+          with: {
+            agency: {
+              columns: {
+                id: true,
+                agencyName: true,
+                logoUrl: true,
+              },
+            },
+          },
           columns: {
             id: true,
             email: true,
@@ -101,6 +110,15 @@ export class PropertyRepository {
       where: eq(propertiesTable.id, id),
       with: {
         owner: {
+          with: {
+            agency: {
+              columns: {
+                id: true,
+                agencyName: true,
+                logoUrl: true,
+              },
+            },
+          },
           columns: {
             id: true,
             email: true,
