@@ -5,6 +5,7 @@ import { AgencyRepository } from "./agency.repo";
 import type { AppEnv } from "@/types";
 import { firebaseAuthMiddleware } from "@/middleware";
 import { agencySchema } from "./schema";
+import { BadRequestError } from "@/errors/http-errors";
 
 const agencyRoutes = new Hono<AppEnv>();
 
@@ -23,11 +24,11 @@ agencyRoutes.get("/:id", firebaseAuthMiddleware, async (c) => {
   return c.json(results);
 });
 
-agencyRoutes.post("/create", firebaseAuthMiddleware, async (c) => {
+agencyRoutes.post("/", firebaseAuthMiddleware, async (c) => {
   const body = await c.req.json();
   const parsed = agencySchema.safeParse(body);
   if (!parsed.success) {
-    throw new Error(parsed.error.issues[0].message);
+    throw new BadRequestError(parsed.error.issues[0].message);
   }
   const db = getDb(c.env);
   const user = c.get("userFirebase");

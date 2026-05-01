@@ -9,9 +9,11 @@ export const agencySchema = z.object({
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
   province: z.string().min(1, "Province is required"),
-  establishedAt: z.coerce.date({
-    message: "Please enter a valid date",
-  }),
+  establishedAt: z.coerce
+    .date({
+      message: "Please enter a valid date",
+    })
+    .optional(),
 });
 
 export type AgencyInput = z.infer<typeof agencySchema>;

@@ -1,12 +1,9 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { usersTable } from "@/modules/users/users.model";
-import { v7 as uuidv7 } from "uuid";
 import { relations } from "drizzle-orm";
 
 export const agencyTable = sqliteTable("agency", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => uuidv7()),
+  id: integer("id").primaryKey({ autoIncrement: true }),
   agencyName: text("agency_name").notNull(),
   logoUrl: text("logo_url").notNull(),
   websiteUrl: text("website_url"),

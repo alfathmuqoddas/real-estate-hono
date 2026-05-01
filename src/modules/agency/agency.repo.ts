@@ -32,7 +32,7 @@ export class AgencyRepository {
           },
         },
       },
-      where: eq(agencyTable.id, id),
+      where: eq(agencyTable.id, Number(id)),
     });
   }
 
@@ -47,14 +47,14 @@ export class AgencyRepository {
     return await this.db
       .update(agencyTable)
       .set(input)
-      .where(eq(agencyTable.id, id))
+      .where(eq(agencyTable.id, Number(id)))
       .returning();
   }
 
   async delete(id: string) {
     return await this.db
       .delete(agencyTable)
-      .where(eq(agencyTable.id, id))
+      .where(eq(agencyTable.id, Number(id)))
       .returning();
   }
 }
