@@ -10,7 +10,7 @@ export const favoritesTable = sqliteTable("favorites", {
     .$defaultFn(() => uuidv7()),
   userId: text("user_id")
     .notNull()
-    .references(() => usersTable.id, { onDelete: "cascade" }),
+    .references(() => usersTable.id),
   propertyId: text("property_id")
     .notNull()
     .references(() => propertiesTable.id, { onDelete: "cascade" }),
