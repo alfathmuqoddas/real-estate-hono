@@ -70,7 +70,7 @@ propertyRoutes.put("/:id", firebaseAuthMiddleware, async (c) => {
   const service = new PropertiesService(new PropertyRepository(db));
   const results = await service.updateProperty(
     c.req.param("id"),
-    body,
+    parsed.data,
     userContext,
   );
   return c.json(results);
