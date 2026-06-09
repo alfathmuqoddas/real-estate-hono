@@ -47,6 +47,17 @@ export class PropertiesService {
     return result;
   }
 
+  async getMyProperties(
+    role: UserContext["userFirebase"]["role"],
+    userId: string,
+  ) {
+    if (role !== "admin" && role !== "agent") {
+      throw new ForbiddenError("Only admins or agent can access");
+    }
+
+    return await this.repo.findMyProperties(userId);
+  }
+
   async updateProperty(
     id: string,
     input: Partial<CreatePropertyInput>,

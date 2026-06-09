@@ -1,11 +1,28 @@
 import { CreatePropertyInput, PropertyQuery } from "./dto";
 import { propertiesTable } from "./properties.model";
 import { propertyToFeatures } from "../propertyFeatures/propertyFeatures.model";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, desc } from "drizzle-orm";
 import { buildPropertyFilters, buildPropertyOrder } from "./query";
 
 export class PropertyRepository {
   constructor(private db: ReturnType<typeof import("@/db").getDb>) {}
+
+  async findMyProperties(userId: string) {
+    return await this.db.query.propertiesTable.findMany({
+      where: eq(propertiesTable.propertyAgentId, userId),
+      orderBy: desc(propertiesTable.createdAt),
+      limit: 100,
+      columns: {
+        id: true,
+        propertyDeskripsi: true,
+        propertyTitle: true,
+        propertyType: true,
+        propertyListingType: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
 
   async findAll(query: PropertyQuery, userId?: string) {
     const page = Math.max(1, Number(query.page ?? 1));

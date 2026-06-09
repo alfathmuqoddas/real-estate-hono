@@ -29,6 +29,14 @@ propertyRoutes.get("/", firebaseAuthOptionalMiddleware, async (c) => {
   return c.json(results);
 });
 
+propertyRoutes.get("/my-properties", firebaseAuthMiddleware, async (c) => {
+  const db = getDb(c.env);
+  const user = c.get("userFirebase");
+  const service = new PropertiesService(new PropertyRepository(db));
+  const results = await service.getMyProperties(user.role, user.uid);
+  return c.json(results);
+});
+
 propertyRoutes.get("/:id", firebaseAuthOptionalMiddleware, async (c) => {
   const db = getDb(c.env);
   const user = c.get("userFirebase");
