@@ -26,7 +26,7 @@ export const propertyToFeatures = sqliteTable(
   {
     propertyId: text("property_id")
       .notNull()
-      .references(() => propertiesTable.id),
+      .references(() => propertiesTable.id, { onDelete: "cascade" }),
     featureId: text("feature_id")
       .notNull()
       .references(() => propertyFeaturesTable.id),
