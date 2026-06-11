@@ -23,7 +23,7 @@ export const propertiesTable = sqliteTable("properties", {
   propertyKamarTidur: integer("property_kamar_tidur").notNull(),
   propertyCarport: integer("property_carport"),
   propertyTipeSertifikat: text("property_tipe_sertifikat", {
-    enum: ["SHM", "HGB", "SHP", "HGU", "SHMSRS"],
+    enum: ["SHM", "HGB", "SHP", "HGU", "SHMSRS", "Lainnya"],
   }),
   propertyJumlahLantai: integer("property_jumlah_lantai"),
   propertyGarasi: integer("property_garasi"),
@@ -43,7 +43,9 @@ export const propertiesTable = sqliteTable("properties", {
     .notNull()
     .references(() => usersTable.id),
 
-  status: text("status", { enum: ["active", "inactive"] }).default("inactive"),
+  status: text("status", { enum: ["active", "inactive", "draft"] }).default(
+    "draft",
+  ),
 
   // Timestamps
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(

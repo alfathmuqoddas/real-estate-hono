@@ -54,10 +54,16 @@ const propertyInputFields = z.object({
   propertyType: z.enum(["rumah", "apartemen"]).default("rumah"),
 
   // Base numbers
-  propertyLuasTanah: z.coerce.number(),
+  propertyLuasTanah: z.coerce
+    .number()
+    .min(1, { message: "Land size is required" }),
   propertyLuasBangunan: z.coerce.number().min(1, "Floor size is required"),
-  propertyKamarMandi: z.coerce.number().min(1),
-  propertyKamarTidur: z.coerce.number().min(1),
+  propertyKamarTidur: z.coerce
+    .number()
+    .min(1, { message: "At least 1 bedroom is required" }),
+  propertyKamarMandi: z.coerce
+    .number()
+    .min(1, { message: "At least 1 bathroom is required" }),
 
   // Missing Optional Fields from your Manual Type
   propertyCarport: z.coerce.number().optional(),
@@ -75,7 +81,7 @@ const propertyInputFields = z.object({
     ])
     .optional(),
   propertyTipeSertifikat: z
-    .enum(["SHM", "HGB", "SHP", "HGU", "SHMSRS"])
+    .enum(["SHM", "HGB", "SHP", "HGU", "SHMSRS", "Lainnya"])
     .optional(),
   propertyPerabotan: z
     .enum(["Fully Furnished", "Unfurnished", "Semi-furnished"])
@@ -93,6 +99,7 @@ const propertyInputFields = z.object({
     .optional()
     .default([])
     .transform((val) => [...new Set(val)]),
+  status: z.enum(["active", "inactive", "draft"]).default("draft"),
 });
 
 export const createPropertyInputSchema = propertyInputFields.superRefine(
