@@ -7,21 +7,51 @@ import { buildPropertyFilters, buildPropertyOrder } from "./query";
 export class PropertyRepository {
   constructor(private db: ReturnType<typeof import("@/db").getDb>) {}
 
-  async findMyProperties(userId: string) {
-    return await this.db.query.propertiesTable.findMany({
-      where: eq(propertiesTable.propertyAgentId, userId),
-      orderBy: desc(propertiesTable.createdAt),
-      limit: 100,
+  async findMyProperties(
+    query: { page?: number; limit?: number },
+    userId: string,
+  ) {
+    const page = Math.max(1, Number(query.page ?? 1));
+    const limit = Math.min(50, Number(query.limit ?? 10));
+
+    const offset = (page - 1) * limit;
+
+    const where = eq(propertiesTable.propertyAgentId, userId);
+    const orderBy = desc(propertiesTable.createdAt);
+    const data = await this.db.query.propertiesTable.findMany({
+      where,
+      orderBy,
+      limit,
+      offset,
       columns: {
         id: true,
         propertyDeskripsi: true,
         propertyTitle: true,
         propertyType: true,
         propertyListingType: true,
+        status: true,
         createdAt: true,
         updatedAt: true,
       },
     });
+
+    const result = await this.db
+      .select({ count: sql<number>`count(*)` })
+      .from(propertiesTable)
+      .where(where);
+
+    const rawCount = result[0]?.count ?? 0;
+    const total = Number(rawCount);
+
+    return {
+      data,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: total === 0 ? 0 : Math.ceil(total / limit),
+      },
+    };
   }
 
   async findAll(query: PropertyQuery, userId?: string) {

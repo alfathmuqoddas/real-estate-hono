@@ -31,9 +31,18 @@ propertyRoutes.get("/", firebaseAuthOptionalMiddleware, async (c) => {
 
 propertyRoutes.get("/my-properties", firebaseAuthMiddleware, async (c) => {
   const db = getDb(c.env);
+  const query = c.req.query();
+  const parsed = propertyQuerySchema.safeParse(query);
+  if (!parsed.success) {
+    throw new BadRequestError(parsed.error.issues[0].message);
+  }
   const user = c.get("userFirebase");
   const service = new PropertiesService(new PropertyRepository(db));
-  const results = await service.getMyProperties(user.role, user.uid);
+  const results = await service.getMyProperties(
+    user.role,
+    parsed.data,
+    user.uid,
+  );
   return c.json(results);
 });
 

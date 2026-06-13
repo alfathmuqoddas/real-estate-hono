@@ -49,13 +49,14 @@ export class PropertiesService {
 
   async getMyProperties(
     role: UserContext["userFirebase"]["role"],
+    query: { page?: number; limit?: number },
     userId: string,
   ) {
     if (role !== "admin" && role !== "agent") {
       throw new ForbiddenError("Only admins or agent can access");
     }
 
-    return await this.repo.findMyProperties(userId);
+    return await this.repo.findMyProperties(query, userId);
   }
 
   async updateProperty(
