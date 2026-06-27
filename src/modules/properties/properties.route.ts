@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { getDb } from "@/db";
-import { PropertiesService } from "./properties.service";
-import { PropertyRepository } from "./properties.repo";
+import { PropertiesService as service } from "./properties.service";
 import type { AppEnv } from "@/types";
 import {
   firebaseAuthMiddleware,
@@ -24,8 +23,7 @@ propertyRoutes.get("/", firebaseAuthOptionalMiddleware, async (c) => {
     throw new BadRequestError(parsed.error.issues[0].message);
   }
   const db = getDb(c.env);
-  const service = new PropertiesService(new PropertyRepository(db));
-  const results = await service.getAllProperties(parsed.data, user?.uid);
+  const results = await service.getAllProperties(parsed.data, db, user?.uid);
   return c.json(results);
 });
 
@@ -37,11 +35,11 @@ propertyRoutes.get("/my-properties", firebaseAuthMiddleware, async (c) => {
     throw new BadRequestError(parsed.error.issues[0].message);
   }
   const user = c.get("userFirebase");
-  const service = new PropertiesService(new PropertyRepository(db));
   const results = await service.getMyProperties(
     user.role,
     parsed.data,
     user.uid,
+    db,
   );
   return c.json(results);
 });
@@ -49,8 +47,11 @@ propertyRoutes.get("/my-properties", firebaseAuthMiddleware, async (c) => {
 propertyRoutes.get("/:id", firebaseAuthOptionalMiddleware, async (c) => {
   const db = getDb(c.env);
   const user = c.get("userFirebase");
-  const service = new PropertiesService(new PropertyRepository(db));
-  const results = await service.getPropertyById(c.req.param("id"), user?.uid);
+  const results = await service.getPropertyById(
+    c.req.param("id"),
+    db,
+    user?.uid,
+  );
   return c.json(results);
 });
 
@@ -62,8 +63,7 @@ propertyRoutes.post("/", firebaseAuthMiddleware, async (c) => {
   }
   const user = c.get("userFirebase");
   const db = getDb(c.env);
-  const service = new PropertiesService(new PropertyRepository(db));
-  const results = await service.createProperty(parsed.data, user);
+  const results = await service.createProperty(parsed.data, user, db);
   return c.json(results);
 });
 
@@ -71,8 +71,7 @@ propertyRoutes.put("/bulk", firebaseAuthMiddleware, async (c) => {
   const body = await c.req.json();
   const db = getDb(c.env);
   const userContext = c.get("userFirebase");
-  const service = new PropertiesService(new PropertyRepository(db));
-  const results = await service.bulkUpdateProperties(userContext, body);
+  const results = await service.bulkUpdateProperties(userContext, body, db);
   return c.json(results);
 });
 
@@ -84,11 +83,11 @@ propertyRoutes.put("/:id", firebaseAuthMiddleware, async (c) => {
   }
   const db = getDb(c.env);
   const userContext = c.get("userFirebase");
-  const service = new PropertiesService(new PropertyRepository(db));
   const results = await service.updateProperty(
     c.req.param("id"),
     parsed.data,
     userContext,
+    db,
   );
   return c.json(results);
 });
@@ -96,8 +95,7 @@ propertyRoutes.put("/:id", firebaseAuthMiddleware, async (c) => {
 propertyRoutes.delete("/:id", firebaseAuthMiddleware, async (c) => {
   const db = getDb(c.env);
   const user = c.get("userFirebase");
-  const service = new PropertiesService(new PropertyRepository(db));
-  const results = await service.deleteProperty(c.req.param("id"), user);
+  const results = await service.deleteProperty(c.req.param("id"), user, db);
   return c.json(results);
 });
 
