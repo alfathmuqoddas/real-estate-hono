@@ -4,12 +4,13 @@ import { propertyToFeatures } from "../propertyFeatures/propertyFeatures.model";
 import { eq, sql, desc } from "drizzle-orm";
 import { buildPropertyFilters, buildPropertyOrder } from "./query";
 
-export class PropertyRepository {
-  constructor(private db: ReturnType<typeof import("@/db").getDb>) {}
+type DB = ReturnType<typeof import("@/db").getDb>;
 
+export const PropertyRepository = {
   async findMyProperties(
     query: { page?: number; limit?: number },
     userId: string,
+    db: DB,
   ) {
     const page = Math.max(1, Number(query.page ?? 1));
     const limit = Math.min(50, Number(query.limit ?? 10));
@@ -18,7 +19,7 @@ export class PropertyRepository {
 
     const where = eq(propertiesTable.propertyAgentId, userId);
     const orderBy = desc(propertiesTable.createdAt);
-    const data = await this.db.query.propertiesTable.findMany({
+    const data = await db.query.propertiesTable.findMany({
       where,
       orderBy,
       limit,
@@ -35,7 +36,7 @@ export class PropertyRepository {
       },
     });
 
-    const result = await this.db
+    const result = await db
       .select({ count: sql<number>`count(*)` })
       .from(propertiesTable)
       .where(where);
@@ -52,9 +53,9 @@ export class PropertyRepository {
         totalPages: total === 0 ? 0 : Math.ceil(total / limit),
       },
     };
-  }
+  },
 
-  async findAll(query: PropertyQuery, userId?: string) {
+  async findAll(query: PropertyQuery, db: DB, userId?: string) {
     const page = Math.max(1, Number(query.page ?? 1));
     const limit = Math.min(50, Number(query.limit ?? 10));
 
@@ -63,7 +64,7 @@ export class PropertyRepository {
     const where = buildPropertyFilters(query);
     const orderBy = buildPropertyOrder(query);
 
-    const data = await this.db.query.propertiesTable.findMany({
+    const data = await db.query.propertiesTable.findMany({
       where,
       orderBy,
       limit,
@@ -133,7 +134,7 @@ export class PropertyRepository {
       },
     });
 
-    const result = await this.db
+    const result = await db
       .select({ count: sql<number>`count(*)` })
       .from(propertiesTable)
       .where(where);
@@ -150,10 +151,10 @@ export class PropertyRepository {
         totalPages: total === 0 ? 0 : Math.ceil(total / limit),
       },
     };
-  }
+  },
 
-  async findById(id: string, userId?: string) {
-    return await this.db.query.propertiesTable.findFirst({
+  async findById(id: string, db: DB, userId?: string) {
+    return await db.query.propertiesTable.findFirst({
       where: eq(propertiesTable.id, id),
       with: {
         owner: {
@@ -202,23 +203,24 @@ export class PropertyRepository {
         },
       },
     });
-  }
+  },
 
-  async createBulk(input: CreatePropertyInput[], userId: string) {
+  async createBulk(input: CreatePropertyInput[], userId: string, db: DB) {
     const data = input.map((property) => ({
       ...property,
       propertyAgentId: userId,
     }));
 
-    return await this.db.insert(propertiesTable).values(data).returning();
-  }
+    return await db.insert(propertiesTable).values(data).returning();
+  },
 
   async create(
     input: CreatePropertyInput,
     userId: string,
+    db: DB,
     propertyFeatures?: string[],
   ) {
-    return await this.db.transaction(async (tx) => {
+    return await db.transaction(async (tx) => {
       const [property] = await tx
         .insert(propertiesTable)
         .values({ ...input, propertyAgentId: userId })
@@ -235,14 +237,15 @@ export class PropertyRepository {
 
       return property;
     });
-  }
+  },
 
   async update(
     id: string,
     input: Partial<CreatePropertyInput>,
+    db: DB,
     propertyFeatures?: string[],
   ) {
-    return await this.db.transaction(async (tx) => {
+    return await db.transaction(async (tx) => {
       const [property] = await tx
         .update(propertiesTable)
         .set({ ...input, updatedAt: new Date() })
@@ -271,10 +274,13 @@ export class PropertyRepository {
 
       return property;
     });
-  }
+  },
 
-  async bulkUpdate(inputs: (Partial<CreatePropertyInput> & { id: string })[]) {
-    return await this.db.transaction(async (tx) => {
+  async bulkUpdate(
+    inputs: (Partial<CreatePropertyInput> & { id: string })[],
+    db: DB,
+  ) {
+    return await db.transaction(async (tx) => {
       const promises = inputs.map((input) => {
         const { id, ...updateData } = input;
 
@@ -291,13 +297,13 @@ export class PropertyRepository {
       const results = await Promise.all(promises);
       return results.flat();
     });
-  }
+  },
 
-  async delete(id: string) {
-    const [property] = await this.db
+  async delete(id: string, db: DB) {
+    const [property] = await db
       .delete(propertiesTable)
       .where(eq(propertiesTable.id, id))
       .returning();
     return property;
-  }
-}
+  },
+};
