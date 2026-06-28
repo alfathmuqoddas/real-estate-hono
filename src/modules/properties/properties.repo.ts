@@ -3,8 +3,7 @@ import { propertiesTable } from "./properties.model";
 import { propertyToFeatures } from "../propertyFeatures/propertyFeatures.model";
 import { eq, sql, desc } from "drizzle-orm";
 import { buildPropertyFilters, buildPropertyOrder } from "./query";
-
-type DB = ReturnType<typeof import("@/db").getDb>;
+import type { DB } from "@/db";
 
 export const PropertyRepository = {
   async findMyProperties(

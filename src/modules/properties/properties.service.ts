@@ -7,8 +7,7 @@ import {
 } from "@/errors/http-errors";
 import type { PropertyQuery } from "./dto";
 import { UserContext } from "@/types";
-
-type DB = ReturnType<typeof import("@/db").getDb>;
+import type { DB } from "@/db";
 
 export const PropertiesService = {
   async createProperty(
