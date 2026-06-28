@@ -3,30 +3,29 @@ import {
   ForbiddenError,
   NotFoundError,
 } from "@/errors/http-errors";
-import { AgencyRepository } from "./agency.repo";
+import { AgencyRepository as repo } from "./agency.repo";
 import type { AgencyInput } from "./schema";
 import type { UserContext } from "@/types";
+import type { DB } from "@/db";
 
-export class AgencyService {
-  constructor(private repo: AgencyRepository) {}
-
-  async findAll(user: UserContext["userFirebase"]) {
+export const AgencyService = {
+  async findAll(user: UserContext["userFirebase"], db: DB) {
     if (user.role !== "admin") {
       throw new ForbiddenError("Only admins can view all agencies");
     }
 
-    return await this.repo.findAll();
-  }
+    return await repo.findAll(db);
+  },
 
-  async findById(id: string) {
+  async findById(id: string, db: DB) {
     if (!id) {
       throw new BadRequestError("Agency id is required");
     }
 
-    return await this.repo.findById(id);
-  }
+    return await repo.findById(id, db);
+  },
 
-  async create(input: AgencyInput, user: UserContext["userFirebase"]) {
+  async create(input: AgencyInput, user: UserContext["userFirebase"], db: DB) {
     if (!user.uid) {
       throw new BadRequestError("User id is required");
     }
@@ -34,15 +33,16 @@ export class AgencyService {
     if (user.role !== "admin" && user.role !== "agent") {
       throw new ForbiddenError("Only admins or agent can create agencies");
     }
-    await this.repo.create(input, user.uid);
+    await repo.create(input, user.uid, db);
 
     return { message: "Agency created successfully" };
-  }
+  },
 
   async update(
     id: string,
     input: Partial<AgencyInput>,
     user: UserContext["userFirebase"],
+    db: DB,
   ) {
     if (!id) {
       throw new BadRequestError("Agency id is required");
@@ -52,7 +52,7 @@ export class AgencyService {
       throw new BadRequestError("No fields to update");
     }
 
-    const agency = await this.repo.findById(id);
+    const agency = await repo.findById(id, db);
 
     if (!agency) {
       throw new NotFoundError("Agency not found");
@@ -65,17 +65,17 @@ export class AgencyService {
       throw new ForbiddenError("You are not authorized to update this agency");
     }
 
-    await this.repo.update(id, input);
+    await repo.update(id, input, db);
 
     return { message: "Agency updated successfully" };
-  }
+  },
 
-  async delete(id: string, user: UserContext["userFirebase"]) {
+  async delete(id: string, user: UserContext["userFirebase"], db: DB) {
     if (!id) {
       throw new BadRequestError("Agency id is required");
     }
 
-    const agency = await this.repo.findById(id);
+    const agency = await repo.findById(id, db);
 
     if (!agency) {
       throw new NotFoundError("Agency not found");
@@ -88,7 +88,7 @@ export class AgencyService {
       throw new ForbiddenError("You are not authorized to delete this agency");
     }
 
-    await this.repo.delete(id);
+    await repo.delete(id, db);
     return { message: "Agency deleted successfully" };
-  }
-}
+  },
+};
