@@ -1,12 +1,11 @@
 import { eq } from "drizzle-orm";
 import { agencyTable } from "./agency.model";
 import type { AgencyInput } from "./schema";
+import type { DB } from "@/db";
 
-export class AgencyRepository {
-  constructor(private db: ReturnType<typeof import("@/db").getDb>) {}
-
-  async findAll() {
-    return await this.db.query.agencyTable.findMany({
+export const AgencyRepository = {
+  async findAll(db: DB) {
+    return await db.query.agencyTable.findMany({
       with: {
         createdBy: {
           columns: {
@@ -18,10 +17,10 @@ export class AgencyRepository {
         },
       },
     });
-  }
+  },
 
-  async findById(id: string) {
-    return await this.db.query.agencyTable.findFirst({
+  async findById(id: string, db: DB) {
+    return await db.query.agencyTable.findFirst({
       with: {
         createdBy: {
           columns: {
@@ -34,27 +33,27 @@ export class AgencyRepository {
       },
       where: eq(agencyTable.id, Number(id)),
     });
-  }
+  },
 
-  async create(input: AgencyInput, userId: string) {
-    return await this.db
+  async create(input: AgencyInput, userId: string, db: DB) {
+    return await db
       .insert(agencyTable)
       .values({ ...input, createdById: userId })
       .returning();
-  }
+  },
 
-  async update(id: string, input: Partial<AgencyInput>) {
-    return await this.db
+  async update(id: string, input: Partial<AgencyInput>, db: DB) {
+    return await db
       .update(agencyTable)
       .set(input)
       .where(eq(agencyTable.id, Number(id)))
       .returning();
-  }
+  },
 
-  async delete(id: string) {
-    return await this.db
+  async delete(id: string, db: DB) {
+    return await db
       .delete(agencyTable)
       .where(eq(agencyTable.id, Number(id)))
       .returning();
-  }
-}
+  },
+};
