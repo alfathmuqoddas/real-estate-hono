@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { getDb } from "@/db";
-import { FavoriteService } from "./favorites.service";
-import { FavoriteRepository } from "./favorites.repo";
+import { FavoritesService as service } from "./favorites.service";
 import type { AppEnv } from "@/types";
 import { firebaseAuthMiddleware } from "@/middleware";
 import { favoritesQuerySchema } from "./dto";
@@ -12,10 +11,10 @@ const favoritesRoutes = new Hono<AppEnv>();
 favoritesRoutes.post("/:propertyId", firebaseAuthMiddleware, async (c) => {
   const user = c.get("userFirebase");
   const db = getDb(c.env);
-  const service = new FavoriteService(new FavoriteRepository(db), db);
   const results = await service.toggleFavorite(
     user.uid,
     c.req.param("propertyId"),
+    db,
   );
   return c.json(results);
 });
@@ -27,8 +26,7 @@ favoritesRoutes.get("/all-favorites", firebaseAuthMiddleware, async (c) => {
   }
   const user = c.get("userFirebase");
   const db = getDb(c.env);
-  const service = new FavoriteService(new FavoriteRepository(db), db);
-  const results = await service.getAllFavorites(user, parsedQuery.data);
+  const results = await service.getAllFavorites(user, parsedQuery.data, db);
   return c.json(results);
 });
 
@@ -39,10 +37,10 @@ favoritesRoutes.get("/my-favorites", firebaseAuthMiddleware, async (c) => {
   }
   const user = c.get("userFirebase");
   const db = getDb(c.env);
-  const service = new FavoriteService(new FavoriteRepository(db), db);
   const results = await service.getFavoritesByUserId(
     parsedQuery.data,
     user.uid,
+    db,
   );
   return c.json(results);
 });
