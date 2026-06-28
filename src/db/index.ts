@@ -11,3 +11,5 @@ export function getDb(env: Bindings) {
   });
   return drizzle(client, { schema });
 }
+
+export type DB = ReturnType<typeof getDb>;
