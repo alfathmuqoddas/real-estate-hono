@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { getDb } from "@/db";
-import { AgencyService } from "./agency.service";
-import { AgencyRepository } from "./agency.repo";
+import { AgencyService as service } from "./agency.service";
 import type { AppEnv } from "@/types";
 import { firebaseAuthMiddleware } from "@/middleware";
 import { agencySchema } from "./schema";
@@ -12,15 +11,13 @@ const agencyRoutes = new Hono<AppEnv>();
 agencyRoutes.get("/", firebaseAuthMiddleware, async (c) => {
   const db = getDb(c.env);
   const user = c.get("userFirebase");
-  const service = new AgencyService(new AgencyRepository(db));
-  const results = await service.findAll(user);
+  const results = await service.findAll(user, db);
   return c.json(results);
 });
 
 agencyRoutes.get("/:id", firebaseAuthMiddleware, async (c) => {
   const db = getDb(c.env);
-  const service = new AgencyService(new AgencyRepository(db));
-  const results = await service.findById(c.req.param("id"));
+  const results = await service.findById(c.req.param("id"), db);
   return c.json(results);
 });
 
@@ -32,8 +29,7 @@ agencyRoutes.post("/", firebaseAuthMiddleware, async (c) => {
   }
   const db = getDb(c.env);
   const user = c.get("userFirebase");
-  const service = new AgencyService(new AgencyRepository(db));
-  const results = await service.create(parsed.data, user);
+  const results = await service.create(parsed.data, user, db);
   return c.json(results);
 });
 
@@ -41,16 +37,14 @@ agencyRoutes.put("/:id", firebaseAuthMiddleware, async (c) => {
   const body = await c.req.json();
   const db = getDb(c.env);
   const user = c.get("userFirebase");
-  const service = new AgencyService(new AgencyRepository(db));
-  const results = await service.update(c.req.param("id"), body, user);
+  const results = await service.update(c.req.param("id"), body, user, db);
   return c.json(results);
 });
 
 agencyRoutes.delete("/:id", firebaseAuthMiddleware, async (c) => {
   const db = getDb(c.env);
   const user = c.get("userFirebase");
-  const service = new AgencyService(new AgencyRepository(db));
-  const results = await service.delete(c.req.param("id"), user);
+  const results = await service.delete(c.req.param("id"), user, db);
   return c.json(results);
 });
 
