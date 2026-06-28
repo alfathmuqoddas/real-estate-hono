@@ -1,20 +1,19 @@
 import { usersTable } from "./users.model";
 import type { CreateUserInput } from "./dto";
 import { eq } from "drizzle-orm";
+import type { DB } from "@/db";
 
-export class UserRepository {
-  constructor(private db: ReturnType<typeof import("@/db").getDb>) {}
-
-  async findById(id: string) {
-    return await this.db
+export const UserRepository = {
+  async findById(id: string, db: DB) {
+    return await db
       .select()
       .from(usersTable)
       .where(eq(usersTable.id, id))
       .get();
-  }
+  },
 
-  async syncUserData(input: CreateUserInput) {
-    return await this.db
+  async syncUserData(input: CreateUserInput, db: DB) {
+    return await db
       .insert(usersTable)
       .values({
         id: input.uid,
@@ -36,5 +35,5 @@ export class UserRepository {
         },
       })
       .returning();
-  }
-}
+  },
+};
