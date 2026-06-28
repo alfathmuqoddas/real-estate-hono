@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import { getDb } from "@/db";
-import { PropertyImageService } from "./propetyImages.service";
-import { PropertyImageRepository } from "./propertyImages.repo";
+import { PropertyImageService as service } from "./propetyImages.service";
 import type { AppEnv } from "@/types";
 import { firebaseAuthMiddleware } from "@/middleware";
 import { createPropertyImageInputSchema } from "./dto";
@@ -17,15 +16,16 @@ propertyImagesRoutes.post("/", firebaseAuthMiddleware, async (c) => {
   }
   const user = c.get("userFirebase");
   const db = getDb(c.env);
-  const service = new PropertyImageService(new PropertyImageRepository(db));
-  const results = await service.createPropertyImage(parsed.data, user.uid);
+  const results = await service.createPropertyImage(parsed.data, user.uid, db);
   return c.json(results);
 });
 
 propertyImagesRoutes.get("/:propertyId", async (c) => {
   const db = getDb(c.env);
-  const service = new PropertyImageService(new PropertyImageRepository(db));
-  const results = await service.getPropertyImages(c.req.param("propertyId"));
+  const results = await service.getPropertyImages(
+    c.req.param("propertyId"),
+    db,
+  );
   return c.json(results);
 });
 
