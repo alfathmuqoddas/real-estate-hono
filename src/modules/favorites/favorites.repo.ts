@@ -1,26 +1,25 @@
 import { and, eq, asc, desc, sql } from "drizzle-orm";
 import { favoritesTable } from "./favorites.model";
 import type { FavoritesQuery } from "./dto";
+import type { DB } from "@/db";
 
-export class FavoriteRepository {
-  constructor(private db: ReturnType<typeof import("@/db").getDb>) {}
-
-  async findByUserIdAndPropertyId(userId: string, propertyId: string) {
-    return await this.db.query.favoritesTable.findFirst({
+export const FavoriteRepository = {
+  async findByUserIdAndPropertyId(userId: string, propertyId: string, db: DB) {
+    return await db.query.favoritesTable.findFirst({
       where: and(
         eq(favoritesTable.userId, userId),
         eq(favoritesTable.propertyId, propertyId),
       ),
     });
-  }
+  },
 
-  async findByUserId(query: FavoritesQuery, userId: string) {
+  async findByUserId(query: FavoritesQuery, userId: string, db: DB) {
     const page = Math.max(1, Number(query.page));
     const limit = Math.min(50, Number(query.limit));
 
     const offset = (page - 1) * limit;
 
-    const data = await this.db.query.favoritesTable.findMany({
+    const data = await db.query.favoritesTable.findMany({
       limit,
       offset,
       orderBy:
@@ -69,7 +68,7 @@ export class FavoriteRepository {
       },
     });
 
-    const result = await this.db
+    const result = await db
       .select({ count: sql<number>`count(*)` })
       .from(favoritesTable)
       .where(eq(favoritesTable.userId, userId));
@@ -86,15 +85,15 @@ export class FavoriteRepository {
         totalPages: total === 0 ? 0 : Math.ceil(total / limit),
       },
     };
-  }
+  },
 
-  async findAll(query: FavoritesQuery) {
+  async findAll(query: FavoritesQuery, db: DB) {
     const page = Math.max(1, Number(query.page));
     const limit = Math.min(50, Number(query.limit));
 
     const offset = (page - 1) * limit;
 
-    const data = await this.db.query.favoritesTable.findMany({
+    const data = await db.query.favoritesTable.findMany({
       limit,
       offset,
       orderBy:
@@ -150,7 +149,7 @@ export class FavoriteRepository {
       },
     });
 
-    const result = await this.db
+    const result = await db
       .select({ count: sql<number>`count(*)` })
       .from(favoritesTable);
 
@@ -166,20 +165,20 @@ export class FavoriteRepository {
         totalPages: total === 0 ? 0 : Math.ceil(total / limit),
       },
     };
-  }
+  },
 
-  async create(userId: string, propertyId: string) {
-    return this.db
+  async create(userId: string, propertyId: string, db: DB) {
+    return db
       .insert(favoritesTable)
       .values({
         userId,
         propertyId,
       })
       .returning();
-  }
+  },
 
-  async delete(userId: string, propertyId: string) {
-    return this.db
+  async delete(userId: string, propertyId: string, db: DB) {
+    return db
       .delete(favoritesTable)
       .where(
         and(
@@ -188,5 +187,5 @@ export class FavoriteRepository {
         ),
       )
       .returning();
-  }
-}
+  },
+};
