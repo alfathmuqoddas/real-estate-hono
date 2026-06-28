@@ -1,30 +1,27 @@
-import { FavoriteRepository } from "./favorites.repo";
+import { FavoriteRepository as repo } from "./favorites.repo";
 import { BadRequestError } from "@/errors/http-errors";
 import type { FavoritesQuery } from "./dto";
 import type { UserContext } from "@/types";
 import { ForbiddenError } from "@/errors/http-errors";
+import type { DB } from "@/db";
 
-export class FavoriteService {
-  constructor(
-    private repo: FavoriteRepository,
-    private db: ReturnType<typeof import("@/db").getDb>,
-  ) {}
-
+export const FavoritesService = {
   async getAllFavorites(
     user: UserContext["userFirebase"],
     query: FavoritesQuery,
+    db: DB,
   ) {
     if (user.role !== "admin") {
       throw new ForbiddenError("Only admins can view all favorites");
     }
-    return await this.repo.findAll(query);
-  }
+    return await repo.findAll(query, db);
+  },
 
-  async getFavoritesByUserId(query: FavoritesQuery, userId: string) {
-    return await this.repo.findByUserId(query, userId);
-  }
+  async getFavoritesByUserId(query: FavoritesQuery, userId: string, db: DB) {
+    return await repo.findByUserId(query, userId, db);
+  },
 
-  async toggleFavorite(userId: string, propertyId: string) {
+  async toggleFavorite(userId: string, propertyId: string, db: DB) {
     if (!userId) {
       throw new BadRequestError("User id is required");
     }
@@ -33,19 +30,20 @@ export class FavoriteService {
       throw new BadRequestError("Property id is required");
     }
 
-    return await this.db.transaction(async (tx) => {
-      const existing = await this.repo.findByUserIdAndPropertyId(
+    return await db.transaction(async (tx) => {
+      const existing = await repo.findByUserIdAndPropertyId(
         userId,
         propertyId,
+        db,
       );
 
       if (existing) {
-        await this.repo.delete(userId, propertyId);
+        await repo.delete(userId, propertyId, db);
         return { status: "removes" };
       }
 
-      await this.repo.create(userId, propertyId);
+      await repo.create(userId, propertyId, db);
       return { status: "added" };
     });
-  }
-}
+  },
+};
