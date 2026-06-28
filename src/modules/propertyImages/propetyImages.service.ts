@@ -1,11 +1,14 @@
-import { PropertyImageRepository } from "./propertyImages.repo";
+import { PropertyImageRepository as repo } from "./propertyImages.repo";
 import type { CreatePropertyImageInput } from "./dto";
 import { BadRequestError } from "@/errors/http-errors";
+import type { DB } from "@/db";
 
-export class PropertyImageService {
-  constructor(private repo: PropertyImageRepository) {}
-
-  async createPropertyImage(input: CreatePropertyImageInput[], userId: string) {
+export const PropertyImageService = {
+  async createPropertyImage(
+    input: CreatePropertyImageInput[],
+    userId: string,
+    db: DB,
+  ) {
     if (!userId) {
       throw new BadRequestError("User id is required");
     }
@@ -15,15 +18,15 @@ export class PropertyImageService {
     if (!Array.isArray(input)) {
       throw new BadRequestError("Body must be an array");
     }
-    const result = await this.repo.create(input, userId);
+    const result = await repo.create(input, userId, db);
 
     return { message: `Succesfully created ${result.length} images` };
-  }
+  },
 
-  async getPropertyImages(propertyId: string) {
+  async getPropertyImages(propertyId: string, db: DB) {
     if (!propertyId) {
       throw new BadRequestError("Property id is required");
     }
-    return await this.repo.findByPropertyId(propertyId);
-  }
-}
+    return await repo.findByPropertyId(propertyId, db);
+  },
+};
