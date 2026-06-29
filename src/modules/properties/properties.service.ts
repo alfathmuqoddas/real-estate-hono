@@ -16,7 +16,6 @@ export const PropertiesService = {
     db: DB,
   ) {
     if (!user.uid) throw new BadRequestError("User id is required");
-    //must be admin or agent role
     if (user.role !== "admin" && user.role !== "agent") {
       throw new ForbiddenError("Only admins or agent can create properties");
     }
@@ -80,16 +79,11 @@ export const PropertiesService = {
       throw new NotFoundError("Property not found");
     }
 
-    if (user.role === "user") {
-      throw new ForbiddenError("User cannot update properties");
-    }
+    const isAdmin = user.role === "admin";
+    const isAgentOwner =
+      user.role === "agent" && property.propertyAgentId === user.uid;
 
-    if (user.role === "admin") {
-      // Admins can update any property
-      return await repo.update(id, input, db, input.propertyFeatures);
-    }
-
-    if (property.propertyAgentId !== user.uid) {
+    if (!isAdmin && !isAgentOwner) {
       throw new ForbiddenError(
         "You are not authorized to update this property",
       );
@@ -132,16 +126,14 @@ export const PropertiesService = {
       throw new NotFoundError("Property not found");
     }
 
-    if (user.role === "user") {
-      throw new ForbiddenError("User cannot delete properties");
-    }
+    const isAdmin = user.role === "admin";
+    const isAgentOwner =
+      user.role === "agent" && property.propertyAgentId === user.uid;
 
-    if (user.role === "admin") {
-      return await repo.delete(id, db);
-    }
-
-    if (property.propertyAgentId !== user.uid) {
-      throw new ForbiddenError("You are not allowed to delete this property");
+    if (!isAdmin && !isAgentOwner) {
+      throw new ForbiddenError(
+        "You are not authorized to delete this property",
+      );
     }
 
     return await repo.delete(id, db);
