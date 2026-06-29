@@ -16,7 +16,33 @@ propertyImagesRoutes.post("/", firebaseAuthMiddleware, async (c) => {
   }
   const user = c.get("userFirebase");
   const db = getDb(c.env);
-  const results = await service.createPropertyImage(parsed.data, user.uid, db);
+  const results = await service.createPropertyImage(parsed.data, user, db);
+  return c.json(results);
+});
+
+propertyImagesRoutes.get(
+  "/images-by-user/:userId",
+  firebaseAuthMiddleware,
+  async (c) => {
+    const db = getDb(c.env);
+    const userId = c.req.param("userId");
+    const user = c.get("userFirebase");
+    const results = await service.getPropertyImagesByUserId(userId, user, db);
+    return c.json(results);
+  },
+);
+
+propertyImagesRoutes.get("/my-images", firebaseAuthMiddleware, async (c) => {
+  const db = getDb(c.env);
+  const user = c.get("userFirebase");
+  const results = await service.getMyPropertyImages(user, db);
+  return c.json(results);
+});
+
+propertyImagesRoutes.get("/all-images", firebaseAuthMiddleware, async (c) => {
+  const db = getDb(c.env);
+  const user = c.get("userFirebase");
+  const results = await service.getAllPropertyImages(user, db);
   return c.json(results);
 });
 
@@ -24,6 +50,17 @@ propertyImagesRoutes.get("/:propertyId", async (c) => {
   const db = getDb(c.env);
   const results = await service.getPropertyImages(
     c.req.param("propertyId"),
+    db,
+  );
+  return c.json(results);
+});
+
+propertyImagesRoutes.delete("/:id", firebaseAuthMiddleware, async (c) => {
+  const db = getDb(c.env);
+  const user = c.get("userFirebase");
+  const results = await service.deletePropertyImage(
+    c.req.param("id"),
+    user,
     db,
   );
   return c.json(results);
