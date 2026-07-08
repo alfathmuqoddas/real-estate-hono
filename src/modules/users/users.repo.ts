@@ -28,10 +28,6 @@ export const UserRepository = {
         target: usersTable.id,
         set: {
           lastLogin: new Date(),
-          name: input.name,
-          role: input.role,
-          photoUrl: input.photoUrl,
-          email: input.email,
         },
       })
       .returning();
