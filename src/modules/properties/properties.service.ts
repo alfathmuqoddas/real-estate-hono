@@ -20,7 +20,13 @@ export const PropertiesService = {
       throw new ForbiddenError("Only admins or agent can create properties");
     }
 
-    await repo.create(input, user.uid, db, input.propertyFeatures);
+    await repo.create(
+      input,
+      user.uid,
+      db,
+      input.propertyFeatures,
+      input.propertyImages,
+    );
     return { message: `Succesfully created property` };
   },
 

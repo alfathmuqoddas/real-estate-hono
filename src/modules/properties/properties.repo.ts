@@ -1,6 +1,7 @@
 import { CreatePropertyInput, PropertyQuery } from "./dto";
 import { propertiesTable } from "./properties.model";
 import { propertyToFeatures } from "../propertyFeatures/propertyFeatures.model";
+import { propertyImagesTable } from "../propertyImages/propertyImages.model";
 import { eq, sql, desc } from "drizzle-orm";
 import { buildPropertyFilters, buildPropertyOrder } from "./query";
 import type { DB } from "@/db";
@@ -218,6 +219,7 @@ export const PropertyRepository = {
     userId: string,
     db: DB,
     propertyFeatures?: string[],
+    propertyImages?: string[],
   ) {
     return await db.transaction(async (tx) => {
       const [property] = await tx
@@ -232,6 +234,16 @@ export const PropertyRepository = {
         }));
 
         await tx.insert(propertyToFeatures).values(propertyFeaturesData);
+      }
+
+      if (propertyImages && propertyImages.length > 0) {
+        const propertyImagesData = propertyImages?.map((imageUrl) => ({
+          propertyId: property.id,
+          userId: userId,
+          imageUrl,
+        }));
+
+        await tx.insert(propertyImagesTable).values(propertyImagesData);
       }
 
       return property;

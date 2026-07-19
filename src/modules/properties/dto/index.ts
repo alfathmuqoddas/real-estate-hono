@@ -99,6 +99,11 @@ const propertyInputFields = z.object({
     .optional()
     .default([])
     .transform((val) => [...new Set(val)]),
+  propertyImages: z
+    .array(z.string())
+    .optional()
+    .default([])
+    .transform((val) => [...new Set(val)]),
   status: z.enum(["active", "inactive", "draft"]).default("draft"),
 });
 
